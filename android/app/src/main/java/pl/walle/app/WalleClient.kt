@@ -26,11 +26,38 @@ class WalleClient {
 
     private var socket: WebSocket? = null
 
+    /** Tryb demo: robot jest symulowany w aplikacji, komendy trafiają tylko do dziennika. */
+    @Volatile
+    var demo = false
+        private set
+    private val _log = MutableStateFlow<List<String>>(emptyList())
+    val log: StateFlow<List<String>> = _log.asStateFlow()
+    private var lastLogKey = ""
+    private var demoAudioBytes = 0L
+
     private val _state = MutableStateFlow(LinkState.DISCONNECTED)
     val state: StateFlow<LinkState> = _state.asStateFlow()
 
     private val _status = MutableStateFlow(RobotStatus())
     val status: StateFlow<RobotStatus> = _status.asStateFlow()
+
+    fun connectDemo() {
+        demo = true
+        demoAudioBytes = 0
+        _log.value = emptyList()
+        lastLogKey = ""
+        _status.value = RobotStatus(batteryVolts = 7.84, cam = true)
+        _state.value = LinkState.CONNECTED
+        note("demo", "Tryb demo: robot jest symulowany w aplikacji")
+    }
+
+    /** Zapisuje wpis w dzienniku; kolejne wpisy o tym samym kluczu (np. jazda 20×/s) zastępują poprzedni. */
+    private fun note(key: String, text: String) {
+        val current = _log.value
+        val next = if (key == lastLogKey && current.isNotEmpty()) current.dropLast(1) + text else current + text
+        lastLogKey = key
+        _log.value = next.takeLast(MAX_LOG_LINES)
+    }
 
     fun connect(host: String) {
         if (_state.value != LinkState.DISCONNECTED) return
@@ -74,17 +101,33 @@ class WalleClient {
     }
 
     fun disconnect() {
+        demo = false
         socket?.close(1000, "bye")
         closed()
     }
 
-    fun send(json: JSONObject): Boolean = socket?.send(json.toString()) ?: false
+    fun send(json: JSONObject): Boolean {
+        if (demo) {
+            val key = json.optString("c")
+            if (key != "status") note(key, "→ $json")
+            return true
+        }
+        return socket?.send(json.toString()) ?: false
+    }
 
     /**
      * Wysyła ramkę dźwięku (PCM16 LE mono 16 kHz). Gdy kolejka wysyłania urośnie
      * (słabe Wi-Fi), ramka jest porzucana, żeby opóźnienie nie rosło.
      */
     fun sendAudio(pcm: ByteArray) {
+        if (demo) {
+            val before = demoAudioBytes / 16_384
+            demoAudioBytes += pcm.size
+            if (demoAudioBytes / 16_384 != before) {
+                note("audio", "→ głos: ${demoAudioBytes / 1024} kB z mikrofonu (PCM 16 kHz)")
+            }
+            return
+        }
         val s = socket ?: return
         if (s.queueSize() > MAX_AUDIO_QUEUE_BYTES) return
         s.send(pcm.toByteString())
@@ -92,6 +135,7 @@ class WalleClient {
 
     companion object {
         private const val MAX_AUDIO_QUEUE_BYTES = 16 * 1024L
+        private const val MAX_LOG_LINES = 5
     }
 }
 

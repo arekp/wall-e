@@ -16,6 +16,23 @@ Kotlin + Jetpack Compose. Łączy się z siecią Wi-Fi `WALLE` robota i steruje 
 - **Kamera:** podgląd MJPEG z ESP32-CAM (`http://192.168.4.10:81/stream`).
 - **Status:** napięcie akumulatora, stan połączenia.
 
+## Instalacja na telefonie i aktualizacje
+
+Każdy build na GitHub Actions publikuje wydanie z podpisanym APK. Stały adres do pobrania najnowszej wersji:
+
+`https://github.com/arekp/wall-e/releases/latest/download/walle.apk`
+
+1. Otwórz ten adres w przeglądarce telefonu i pobierz `walle.apk`; zezwól na instalację z tego źródła.
+2. Kolejne wersje instalują się **na wierzch** (ten sam klucz podpisu, rosnący numer wersji), bez utraty ustawień.
+3. Aktualizacja: w aplikacji Ustawienia → „Aktualizacja” otwiera stronę najnowszego wydania. Automatycznie aktualizuje aplikacja Obtainium (dodaj w niej `https://github.com/arekp/wall-e`).
+
+Klucz podpisu (`app/walle.keystore`) jest hobbystyczny i publiczny w repo – wystarcza do instalacji poza sklepem, ale nie do publikacji w Google Play.
+
+## Tryb demo (bez robota)
+
+Przycisk **Demo** w aplikacji symuluje robota wewnątrz telefonu: nie wymaga Wi-Fi ani sprzętu. Komendy (jazda, serwa,
+pozy, dźwięki, głośność) i ilość dźwięku z mikrofonu widać w dzienniku na ekranie. Pozwala sprawdzić interfejs i mikrofon.
+
 ## Budowanie
 
 1. Zainstaluj Android Studio (Ladybug lub nowsze) i JDK 17.

@@ -12,13 +12,30 @@ android {
         applicationId = "pl.walle.app"
         minSdk = 29 // WifiNetworkSpecifier
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        // numer buildu z GitHub Actions rośnie z każdym buildem, więc telefon traktuje nowszy APK jako aktualizację
+        val build = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInt()
+        versionCode = build
+        versionName = "0.1.$build"
+    }
+
+    // Stały klucz, żeby kolejne APK podpisane tym samym podpisem aktualizowały zainstalowaną aplikację.
+    // To klucz hobbystyczny (publiczny w repo) – wystarczy do instalacji poza sklepem, nie do publikacji w Google Play.
+    signingConfigs {
+        create("walle") {
+            storeFile = file("walle.keystore")
+            storePassword = "walle-hobby"
+            keyAlias = "walle"
+            keyPassword = "walle-hobby"
+        }
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("walle")
+        }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("walle")
         }
     }
     compileOptions {

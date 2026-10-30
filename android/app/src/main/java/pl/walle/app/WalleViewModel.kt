@@ -50,6 +50,8 @@ class WalleViewModel(app: Application) : AndroidViewModel(app) {
         private set
     var talking by mutableStateOf(false)
         private set
+    var demo by mutableStateOf(false)
+        private set
     var camOn by mutableStateOf(true)
     var volume by mutableStateOf(70f)
 
@@ -126,7 +128,15 @@ class WalleViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /** Tryb demo: bez Wi-Fi i robota; komendy i mikrofon widać w dzienniku na ekranie. */
+    fun connectDemo() {
+        wantConnection = true
+        demo = true
+        client.connectDemo()
+    }
+
     fun disconnect() {
+        demo = false
         wantConnection = false
         client.send(Cmd.stop())
         client.disconnect()

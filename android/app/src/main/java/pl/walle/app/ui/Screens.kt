@@ -1,7 +1,9 @@
 package pl.walle.app.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.graphics.Color as AColor
 import android.webkit.WebView
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -76,7 +78,9 @@ fun WalleApp(vm: WalleViewModel) {
                 link = link,
                 battery = status.batteryVolts,
                 wantConnection = vm.wantConnection,
+                demo = vm.demo,
                 onConnect = vm::connect,
+                onDemo = vm::connectDemo,
                 onDisconnect = vm::disconnect,
                 onSettings = { showSettings = true },
             )
@@ -108,7 +112,9 @@ private fun Header(
     link: LinkState,
     battery: Double?,
     wantConnection: Boolean,
+    demo: Boolean,
     onConnect: () -> Unit,
+    onDemo: () -> Unit,
     onDisconnect: () -> Unit,
     onSettings: () -> Unit,
 ) {
@@ -120,7 +126,7 @@ private fun Header(
         Column(Modifier.weight(1f)) {
             Text("Wall-E", style = MaterialTheme.typography.titleLarge)
             val stateText = when (link) {
-                LinkState.CONNECTED -> "połączony"
+                LinkState.CONNECTED -> if (demo) "tryb demo (symulacja)" else "połączony"
                 LinkState.CONNECTING -> "łączenie…"
                 LinkState.DISCONNECTED -> if (wantConnection) "szukam robota…" else "rozłączony"
             }
@@ -135,6 +141,7 @@ private fun Header(
         if (wantConnection) {
             OutlinedButton(onClick = onDisconnect) { Text("Rozłącz") }
         } else {
+            OutlinedButton(onClick = onDemo) { Text("Demo") }
             Button(onClick = onConnect) { Text("Połącz") }
         }
     }
@@ -154,8 +161,9 @@ private fun DriveTab(vm: WalleViewModel, connected: Boolean) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         CameraView(
-            url = if (vm.wifiConnected && vm.camOn) "http://${vm.settings.camHost}:81/stream" else null,
-            modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f),
+            url = if (vm.wifiConnected && vm.camOn && !vm.demo) "http://${vm.settings.camHost}:81/stream" else null,
+            placeholder = if (vm.demo) "Kamera: niedostępna w trybie demo" else "Kamera wyłączona / brak połączenia",
+            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
         )
         Row(
             Modifier.fillMaxWidth(),
@@ -207,6 +215,16 @@ private fun DriveTab(vm: WalleViewModel, connected: Boolean) {
             SOUNDS.forEach { (id, label) ->
                 OutlinedButton(onClick = { vm.sound(id) }, modifier = Modifier.weight(1f)) {
                     Text(label, maxLines = 1)
+                }
+            }
+        }
+        if (vm.demo) {
+            val log by vm.client.log.collectAsState()
+            Column(
+                Modifier.fillMaxWidth().background(Color(0xFF212121), RoundedCornerShape(8.dp)).padding(8.dp),
+            ) {
+                log.forEach {
+                    Text(it, color = Color(0xFF9CCC65), style = MaterialTheme.typography.bodySmall, maxLines = 1)
                 }
             }
         }
@@ -305,7 +323,7 @@ fun Joystick(modifier: Modifier = Modifier, onMove: (x: Float, y: Float) -> Unit
 }
 
 @Composable
-private fun CameraView(url: String?, modifier: Modifier = Modifier) {
+private fun CameraView(url: String?, placeholder: String, modifier: Modifier = Modifier) {
     Box(modifier.background(Color.Black), contentAlignment = Alignment.Center) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
@@ -332,7 +350,7 @@ private fun CameraView(url: String?, modifier: Modifier = Modifier) {
             },
         )
         if (url == null) {
-            Text("Kamera wyłączona / brak połączenia", color = Color.White)
+            Text(placeholder, color = Color.White)
         }
     }
 }
@@ -343,6 +361,7 @@ private fun SettingsDialog(initial: Settings, onDismiss: () -> Unit, onSave: (Se
     var password by remember { mutableStateOf(initial.password) }
     var host by remember { mutableStateOf(initial.host) }
     var camHost by remember { mutableStateOf(initial.camHost) }
+    val ctx = LocalContext.current
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Ustawienia") },
@@ -364,8 +383,18 @@ private fun SettingsDialog(initial: Settings, onDismiss: () -> Unit, onSave: (Se
                 Text("Zapisz")
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Anuluj") } },
+        dismissButton = {
+            Row {
+                TextButton(onClick = {
+                    ctx.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse(RELEASES_URL)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                }) { Text("Aktualizacja") }
+                TextButton(onClick = onDismiss) { Text("Anuluj") }
+            }
+        },
     )
 }
 
 private const val LOW_BATTERY_V = 7.0
+private const val RELEASES_URL = "https://github.com/arekp/wall-e/releases/latest"
