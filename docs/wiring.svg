@@ -138,7 +138,7 @@
 <rect x="1250" y="80" width="230" height="110" rx="8" fill="#e0f7fa" stroke="#006064" stroke-width="2"/>
 <text x="1365.0" y="104" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">ESP32-CAM + OV2640</text>
 <text x="1365.0" y="124" text-anchor="middle" font-size="12.5" fill="#37474f">osobny moduł w oku/głowie</text>
-<text x="1365.0" y="141" text-anchor="middle" font-size="12.5" fill="#37474f">klient Wi-Fi 192.168.4.2</text>
+<text x="1365.0" y="141" text-anchor="middle" font-size="12.5" fill="#37474f">klient Wi-Fi 192.168.4.10</text>
 <text x="1365.0" y="158" text-anchor="middle" font-size="12.5" fill="#37474f">strumień MJPEG :81/stream</text>
 <text x="1365.0" y="175" text-anchor="middle" font-size="12.5" fill="#37474f">zasilanie: 5 V z Buck 5 V</text>
 <polyline points="1250,135 1000,135 1000,240" fill="none" stroke="#00838f" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 6"/>

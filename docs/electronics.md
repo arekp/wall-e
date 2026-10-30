@@ -44,7 +44,7 @@ flowchart LR
     DRV --> MR["Silnik prawy"]
     ESP -- "I2S" --> AMP["MAX98357A + głośnik"]
     BUCK5 --> CAM["ESP32-CAM<br/>OV2640 w oku"]
-    CAM -. "Wi-Fi klient (192.168.4.2)<br/>strumień MJPEG :81" .-> ESP
+    CAM -. "Wi-Fi klient (192.168.4.10)<br/>strumień MJPEG :81" .-> ESP
     BAT -- "dzielnik napięcia" --> ESP
 
     PHONE["Telefon<br/>przeglądarka"] -. "Wi-Fi AP 'WALLE'<br/>WebSocket + obraz z kamery" .-> ESP
@@ -119,9 +119,10 @@ Alternatywa: BLE (np. aplikacja „Serial Bluetooth Terminal”) – ten sam pro
 
 Kamera działa jako osobny moduł i nie jest podłączona do głównego ESP32 żadnym przewodem sygnałowym – tylko zasilanie i masa.
 
-- Główny ESP32 jest punktem dostępowym `WALLE`. ESP32-CAM łączy się z nim jako klient i dostaje **stały adres 192.168.4.2** (statyczny IP w firmware kamery).
-- Kamera serwuje strumień MJPEG pod `http://192.168.4.2:81/stream` (przykład `CameraWebServer` z biblioteki ESP32).
-- Strona sterowania na telefonie osadza obraz tagiem `<img src="http://192.168.4.2:81/stream">` obok joysticka – jedno połączenie Wi-Fi, jedna strona.
+- Główny ESP32 jest punktem dostępowym `WALLE`. ESP32-CAM łączy się z nim jako klient i dostaje **stały adres 192.168.4.10** (statyczny IP w firmware kamery).
+- Adres `.10` jest poza zakresem, który serwer DHCP ESP32 przydziela telefonom (zaczyna od `.2`), więc nie dojdzie do konfliktu IP. Kamera po starcie ponawia łączenie, aż AP będzie dostępny.
+- Kamera serwuje strumień MJPEG pod `http://192.168.4.10:81/stream` (przykład `CameraWebServer` z biblioteki ESP32).
+- Strona sterowania na telefonie osadza obraz tagiem `<img src="http://192.168.4.10:81/stream">` obok joysticka – jedno połączenie Wi-Fi, jedna strona.
 - Ustawienia: rozdzielczość QVGA/VGA (320×240 – 640×480), jakość JPEG ok. 12 – kompromis między opóźnieniem a płynnością.
 - Montaż: płytka ESP32-CAM jest duża, więc w głowie mieści się z reguły sam sensor OV2640 na dłuższej taśmie FFC (wersje z wymienną taśmą 15–30 cm), a płytka stoi w korpusie. Mocowanie w modelu: `eye-camera-mount` i `eye-camera-replica`.
 - Programowanie ESP32-CAM wymaga adaptera USB-UART (płytka AI-Thinker nie ma portu USB) albo wersji z płytką bazową ESP32-CAM-MB.
