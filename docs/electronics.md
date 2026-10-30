@@ -12,7 +12,7 @@
 | Sterownik silników | TB6612FNG (zamiennie L298N) | TB6612: 1,2 A ciągłe, mniejsze straty |
 | Serwa | do 9 szt. ⚠️ (szyja ×2, głowa, ramiona ×2, oczy ×2, dłonie ×2 opcjonalnie) | 5–6 V, np. MG90S / SG90 |
 | Sterownik serw | PCA9685 (I²C, 16 kanałów) | odciąża ESP32, zasilanie serw osobne |
-| Wyświetlacz | OLED SSD1306 128×64 I²C (ramka `OLED_frame_v2`) | na tej samej magistrali I²C |
+| Wyświetlacz (opcja) | OLED SSD1306 128×64 I²C (ramka `OLED_frame_v2`) | ozdoba/status; można pominąć – status pokazuje też strona na telefonie |
 | Kamera | **ESP32-CAM (AI-Thinker, OV2640) jako osobny moduł** w głowie/oku | własny procesor, strumień MJPEG; nie zajmuje pinów głównego ESP32 |
 | Dźwięk (opcja) | MAX98357A (I²S) + głośnik 3 W | |
 | Zasilanie | akumulator 2S Li-ion 7,4 V (8,4 V naładowany) + przetwornice | |
@@ -29,7 +29,7 @@ Plik źródłowy: [`wiring.svg`](wiring.svg) (wektorowy), podgląd: [`wiring.png
 ```mermaid
 flowchart LR
     BAT["Akumulator 2S Li-ion 7.4V<br/>+ bezpiecznik 5A + wyłącznik"]
-    BAT --> BUCK5["Buck 5V / 3A<br/>(logika: ESP32, OLED)"]
+    BAT --> BUCK5["Buck 5V / 3A<br/>(ESP32, ESP32-CAM, MAX98357A)"]
     BAT --> BUCK6["Buck 6V / 5A<br/>(serwa)"]
     BAT -->|VM| DRV["TB6612FNG"]
 
@@ -108,6 +108,20 @@ Zakresy trzeba skalibrować mechanicznie na gotowym modelu (ograniczenia w firmw
 
 ## 6. Sterowanie z telefonu
 
+### Topologia sieci
+
+Punkt dostępowy wystawia **tylko główny ESP32**. Telefon i ESP32-CAM to klienci tej samej sieci.
+
+| Urządzenie | Rola Wi-Fi | Adres | Usługa |
+|---|---|---|---|
+| Główny ESP32 | punkt dostępu `WALLE`, serwer DHCP | `192.168.4.1` | strona sterowania (HTTP), WebSocket `/ws` |
+| ESP32-CAM | klient | `192.168.4.10` (stały) | strumień MJPEG `:81/stream` |
+| Telefon | klient | z DHCP (`192.168.4.2` i dalej) | przeglądarka |
+
+Strona pobrana z `192.168.4.1` używa dwóch adresów jednocześnie: WebSocket do `192.168.4.1` (komendy) i tag `<img>` do `192.168.4.10:81` (obraz). Uwaga: telefon może samoczynnie przełączyć się na dane komórkowe, bo `WALLE` nie ma internetu – na czas jazdy wyłącz dane komórkowe lub wybierz „pozostań połączony”.
+
+### Przebieg połączenia
+
 1. ESP32 uruchamia sieć Wi-Fi (tryb AP): SSID `WALLE`, hasło ustawiane w firmware, adres `192.168.4.1`.
 2. Telefon łączy się z tą siecią i otwiera w przeglądarce `http://192.168.4.1`.
 3. ESP32 serwuje stronę z joystickiem (jazda), suwakami serw i przyciskami emocji.
@@ -117,7 +131,7 @@ Alternatywa: BLE (np. aplikacja „Serial Bluetooth Terminal”) – ten sam pro
 
 ### Kamera (ESP32-CAM)
 
-Kamera działa jako osobny moduł i nie jest podłączona do głównego ESP32 żadnym przewodem sygnałowym – tylko zasilanie i masa.
+Kamera (ESP32-CAM) działa jako osobny moduł i nie jest podłączona do głównego ESP32 żadnym przewodem sygnałowym – tylko zasilanie i masa.
 
 - Główny ESP32 jest punktem dostępowym `WALLE`. ESP32-CAM łączy się z nim jako klient i dostaje **stały adres 192.168.4.10** (statyczny IP w firmware kamery).
 - Adres `.10` jest poza zakresem, który serwer DHCP ESP32 przydziela telefonom (zaczyna od `.2`), więc nie dojdzie do konfliktu IP. Kamera po starcie ponawia łączenie, aż AP będzie dostępny.
@@ -145,7 +159,7 @@ Kamera działa jako osobny moduł i nie jest podłączona do głównego ESP32 ż
 - **Fail-safe:** brak komendy `drive` przez 500 ms → silniki stop (utrata Wi-Fi, rozładowany telefon).
 - Limity kątów serw wymuszane w firmware, nie tylko na stronie.
 - Ograniczenie przyspieszenia silników (rampa), żeby nie szarpać przekładniami i nie obciążać baterii.
-- Niskie napięcie baterii → stop silników, komunikat na OLED.
+- Niskie napięcie baterii → stop silników, komunikat na stronie (i na OLED, jeśli jest zamontowany).
 
 ## 7. Lista zakupowa (BOM)
 
@@ -156,11 +170,12 @@ Kamera działa jako osobny moduł i nie jest podłączona do głównego ESP32 ż
 | 1 | Adapter USB-UART (lub ESP32-CAM-MB) do wgrania firmware kamery |
 | 1 | TB6612FNG (moduł) |
 | 1 | PCA9685 (moduł 16 kanałów) |
-| 1 | OLED SSD1306 128×64 I²C |
+| 1 | OLED SSD1306 128×64 I²C *(opcja)* |
 | 9 | Serwa 9 g (MG90S) – liczba do potwierdzenia |
 | 2 | Silniki DC z przekładnią (te, które już masz) |
 | 1 | Akumulator 2S Li-ion + ładowarka/BMS 2S |
-| 1 | Buck 5 V ≥ 3 A, 1 | Buck 6 V ≥ 5 A |
+| 1 | Buck 5 V ≥ 3 A (logika, ESP32-CAM) |
+| 1 | Buck 6 V ≥ 5 A (serwa) |
 | 1 | Bezpiecznik 5 A + wyłącznik |
 | 1 | Kondensatory 1000 µF/16 V, 470 µF/16 V |
 | 1 | Rezystory 100 kΩ i 47 kΩ (dzielnik) |
