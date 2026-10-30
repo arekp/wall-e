@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1000" width="1800" height="1000" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1800" height="1000" fill="#ffffff"/>
+<text x="40" y="40" font-size="26" fill="#263238" text-anchor="start" font-weight="700">Wall-E – schemat połączeń elektroniki (ESP32)</text>
+<text x="40" y="64" font-size="13" fill="#607d8b" text-anchor="start">Projekt do potwierdzenia · wspólna masa (GND) łączy WSZYSTKIE moduły – nie jest rysowana, żeby nie zasłaniać schematu</text>
+<rect x="40" y="430" width="170" height="90" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="125.0" y="454" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Akumulator</text>
+<text x="125.0" y="474" text-anchor="middle" font-size="12.5" fill="#37474f">2S Li-ion</text>
+<text x="125.0" y="491" text-anchor="middle" font-size="12.5" fill="#37474f">7,4 V (8,4 V pełny)</text>
+<rect x="240" y="430" width="170" height="90" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="325.0" y="454" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Bezpiecznik 5 A</text>
+<text x="325.0" y="474" text-anchor="middle" font-size="12.5" fill="#37474f">+ wyłącznik główny</text>
+<polyline points="210,475 240,475" fill="none" stroke="#d32f2f" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="410,475 450,475" fill="none" stroke="#d32f2f" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="450,215 450,850" fill="none" stroke="#d32f2f" stroke-width="4" stroke-linejoin="round"/>
+<text x="458" y="205" font-size="13" fill="#d32f2f" text-anchor="start" font-weight="700">+7,4 V (szyna)</text>
+<rect x="520" y="250" width="200" height="90" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="620.0" y="274" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Buck 5 V / 3 A</text>
+<text x="620.0" y="294" text-anchor="middle" font-size="12.5" fill="#37474f">IN 7,4 V → OUT 5 V</text>
+<text x="620" y="358" font-size="11.5" fill="#ef6c00" text-anchor="middle">zasila też: ESP32-CAM, MAX98357A</text>
+<polyline points="450,290 520,290" fill="none" stroke="#d32f2f" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="450" cy="290" r="5" fill="#d32f2f"/>
+<polyline points="720,290 820,290" fill="none" stroke="#ef6c00" stroke-width="3" stroke-linejoin="round"/>
+<text x="726" y="282" font-size="12" fill="#ef6c00" text-anchor="start" font-weight="700">5 V</text>
+<rect x="520" y="480" width="200" height="80" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="620.0" y="504" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Dzielnik napięcia</text>
+<text x="620.0" y="524" text-anchor="middle" font-size="12.5" fill="#37474f">100 kΩ / 47 kΩ</text>
+<text x="620.0" y="541" text-anchor="middle" font-size="12.5" fill="#37474f">8,4 V → 2,7 V</text>
+<polyline points="450,520 520,520" fill="none" stroke="#d32f2f" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="450" cy="520" r="5" fill="#d32f2f"/>
+<polyline points="720,520 820,520" fill="none" stroke="#546e7a" stroke-width="3" stroke-linejoin="round"/>
+<text x="724" y="512" font-size="11.5" fill="#546e7a" text-anchor="start">pomiar</text>
+<rect x="520" y="620" width="200" height="100" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="620.0" y="644" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">MAX98357A</text>
+<text x="620.0" y="664" text-anchor="middle" font-size="12.5" fill="#37474f">wzmacniacz I²S</text>
+<text x="620.0" y="681" text-anchor="middle" font-size="12.5" fill="#37474f">VIN 5 V · głośnik 3 W</text>
+<text x="620.0" y="698" text-anchor="middle" font-size="12.5" fill="#37474f">(opcja)</text>
+<polyline points="720,640 820,640" fill="none" stroke="#6a1b9a" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="728" y="636" font-size="12" fill="#6a1b9a" text-anchor="start">BCLK</text>
+<polyline points="720,660 820,660" fill="none" stroke="#6a1b9a" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="728" y="656" font-size="12" fill="#6a1b9a" text-anchor="start">LRC</text>
+<polyline points="720,680 820,680" fill="none" stroke="#6a1b9a" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="728" y="676" font-size="12" fill="#6a1b9a" text-anchor="start">DIN</text>
+<rect x="820" y="240" width="240" height="540" rx="8" fill="#e8f0fe" stroke="#1a237e" stroke-width="2"/>
+<text x="940.0" y="264" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">ESP32 DevKit (38 pin)</text>
+<text x="940.0" y="284" text-anchor="middle" font-size="12.5" fill="#37474f">Wi-Fi AP „WALLE”</text>
+<text x="940.0" y="301" text-anchor="middle" font-size="12.5" fill="#37474f">192.168.4.1</text>
+<text x="940.0" y="318" text-anchor="middle" font-size="12.5" fill="#37474f">WebSocket + serwer WWW</text>
+<text x="828" y="286" font-size="12" fill="#ef6c00" text-anchor="start">5V / VIN</text>
+<text x="828" y="516" font-size="12" fill="#546e7a" text-anchor="start">GPIO34 (ADC)</text>
+<text x="828" y="636" font-size="12" fill="#6a1b9a" text-anchor="start">GPIO18</text>
+<text x="828" y="656" font-size="12" fill="#6a1b9a" text-anchor="start">GPIO19</text>
+<text x="828" y="676" font-size="12" fill="#6a1b9a" text-anchor="start">GPIO23</text>
+<rect x="1250" y="790" width="230" height="90" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="1365.0" y="814" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Buck 6 V / 5 A</text>
+<text x="1365.0" y="834" text-anchor="middle" font-size="12.5" fill="#37474f">IN 7,4 V → OUT 6 V (serwa)</text>
+<polyline points="450,850 1250,850" fill="none" stroke="#d32f2f" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="450" cy="850" r="5" fill="#d32f2f"/>
+<text x="900" y="842" font-size="12" fill="#d32f2f" text-anchor="middle" font-weight="700">+7,4 V</text>
+<polyline points="1350,790 1350,720" fill="none" stroke="#a67c00" stroke-width="4" stroke-linejoin="round"/>
+<text x="1360" y="760" font-size="12" fill="#a67c00" text-anchor="start" font-weight="700">6 V → V+</text>
+<rect x="1250" y="250" width="230" height="180" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="1365.0" y="274" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">TB6612FNG</text>
+<text x="1365.0" y="294" text-anchor="middle" font-size="12.5" fill="#37474f">sterownik silników</text>
+<polyline points="1060,280 1250,280" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="1068" y="276" font-size="12" fill="#2e7d32" text-anchor="start">GPIO25</text>
+<text x="1242" y="276" font-size="12" fill="#2e7d32" text-anchor="end">PWMA</text>
+<polyline points="1060,300 1250,300" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="1068" y="296" font-size="12" fill="#2e7d32" text-anchor="start">GPIO26</text>
+<text x="1242" y="296" font-size="12" fill="#2e7d32" text-anchor="end">AIN1</text>
+<polyline points="1060,320 1250,320" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="1068" y="316" font-size="12" fill="#2e7d32" text-anchor="start">GPIO27</text>
+<text x="1242" y="316" font-size="12" fill="#2e7d32" text-anchor="end">AIN2</text>
+<polyline points="1060,340 1250,340" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="1068" y="336" font-size="12" fill="#2e7d32" text-anchor="start">GPIO32</text>
+<text x="1242" y="336" font-size="12" fill="#2e7d32" text-anchor="end">PWMB</text>
+<polyline points="1060,360 1250,360" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="1068" y="356" font-size="12" fill="#2e7d32" text-anchor="start">GPIO33</text>
+<text x="1242" y="356" font-size="12" fill="#2e7d32" text-anchor="end">BIN1</text>
+<polyline points="1060,380 1250,380" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="1068" y="376" font-size="12" fill="#2e7d32" text-anchor="start">GPIO14</text>
+<text x="1242" y="376" font-size="12" fill="#2e7d32" text-anchor="end">BIN2</text>
+<polyline points="1060,400 1250,400" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="1068" y="396" font-size="12" fill="#2e7d32" text-anchor="start">GPIO13</text>
+<text x="1242" y="396" font-size="12" fill="#2e7d32" text-anchor="end">STBY</text>
+<polyline points="450,215 1190,215 1190,265 1250,265" fill="none" stroke="#d32f2f" stroke-width="3" stroke-linejoin="round"/>
+<text x="1195" y="260" font-size="12" fill="#d32f2f" text-anchor="start"></text>
+<text x="1196" y="240" font-size="12" fill="#d32f2f" text-anchor="start" font-weight="700">VM 7,4 V</text>
+<rect x="1250" y="450" width="230" height="80" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="1365.0" y="474" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">OLED SSD1306</text>
+<text x="1365.0" y="494" text-anchor="middle" font-size="12.5" fill="#37474f">0x3C · 3V3 z ESP32</text>
+<rect x="1250" y="560" width="230" height="160" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="1365.0" y="584" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">PCA9685</text>
+<text x="1365.0" y="604" text-anchor="middle" font-size="12.5" fill="#37474f">0x40 · 16× PWM</text>
+<text x="1365.0" y="621" text-anchor="middle" font-size="12.5" fill="#37474f">logika 3V3 z ESP32</text>
+<text x="1365.0" y="638" text-anchor="middle" font-size="12.5" fill="#37474f">V+ = 6 V (serwa)</text>
+<polyline points="1060,475 1250,475" fill="none" stroke="#1565c0" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="1068" y="471" font-size="12" fill="#1565c0" text-anchor="start">GPIO21 SDA</text>
+<polyline points="1060,495 1250,495" fill="none" stroke="#1565c0" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="1068" y="491" font-size="12" fill="#1565c0" text-anchor="start">GPIO22 SCL</text>
+<polyline points="1200,475 1200,580 1250,580" fill="none" stroke="#1565c0" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="1200" cy="475" r="5" fill="#1565c0"/>
+<polyline points="1170,495 1170,600 1250,600" fill="none" stroke="#1565c0" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="1170" cy="495" r="5" fill="#1565c0"/>
+<text x="1242" y="576" font-size="12" fill="#1565c0" text-anchor="end">SDA</text>
+<text x="1242" y="596" font-size="12" fill="#1565c0" text-anchor="end">SCL</text>
+<polyline points="1060,620 1250,620" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="1068" y="616" font-size="12" fill="#2e7d32" text-anchor="start">GPIO4</text>
+<text x="1242" y="616" font-size="12" fill="#2e7d32" text-anchor="end">OE</text>
+<rect x="1560" y="260" width="200" height="70" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="1660.0" y="284" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Silnik lewy</text>
+<text x="1660.0" y="304" text-anchor="middle" font-size="12.5" fill="#37474f">DC + przekładnia</text>
+<rect x="1560" y="350" width="200" height="70" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="1660.0" y="374" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Silnik prawy</text>
+<text x="1660.0" y="394" text-anchor="middle" font-size="12.5" fill="#37474f">DC + przekładnia</text>
+<polyline points="1480,275 1560,275" fill="none" stroke="#212121" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="1480,295 1560,295" fill="none" stroke="#212121" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="1480,365 1560,365" fill="none" stroke="#212121" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="1480,385 1560,385" fill="none" stroke="#212121" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="1488" y="271" font-size="12" fill="#263238" text-anchor="start">AO1/AO2</text>
+<text x="1488" y="361" font-size="12" fill="#263238" text-anchor="start">BO1/BO2</text>
+<rect x="1560" y="540" width="200" height="200" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
+<text x="1660.0" y="564" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Serwa (ch0–ch8)</text>
+<text x="1660.0" y="584" text-anchor="middle" font-size="12.5" fill="#37474f">0 szyja dolna</text>
+<text x="1660.0" y="601" text-anchor="middle" font-size="12.5" fill="#37474f">1 szyja górna</text>
+<text x="1660.0" y="618" text-anchor="middle" font-size="12.5" fill="#37474f">2 obrót głowy</text>
+<text x="1660.0" y="635" text-anchor="middle" font-size="12.5" fill="#37474f">3 ramię L · 4 ramię R</text>
+<text x="1660.0" y="652" text-anchor="middle" font-size="12.5" fill="#37474f">5 oko L · 6 oko R</text>
+<text x="1660.0" y="669" text-anchor="middle" font-size="12.5" fill="#37474f">7 dłoń L · 8 dłoń R (opc.)</text>
+<text x="1660.0" y="686" text-anchor="middle" font-size="12.5" fill="#37474f">każde: sygnał + 6 V + GND</text>
+<polyline points="1480,640 1560,640" fill="none" stroke="#a67c00" stroke-width="5" stroke-linejoin="round"/>
+<text x="1520" y="630" font-size="11.5" fill="#a67c00" text-anchor="middle">PWM + 6 V</text>
+<rect x="560" y="80" width="200" height="90" rx="8" fill="#fff8e1" stroke="#37474f" stroke-width="2"/>
+<text x="660.0" y="104" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Telefon</text>
+<text x="660.0" y="124" text-anchor="middle" font-size="12.5" fill="#37474f">przeglądarka</text>
+<text x="660.0" y="141" text-anchor="middle" font-size="12.5" fill="#37474f">http://192.168.4.1</text>
+<polyline points="760,125 900,125 900,240" fill="none" stroke="#00838f" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 6"/>
+<text x="780" y="118" font-size="12" fill="#00838f" text-anchor="start" font-weight="700">Wi-Fi · WebSocket</text>
+<rect x="1250" y="80" width="230" height="110" rx="8" fill="#e0f7fa" stroke="#006064" stroke-width="2"/>
+<text x="1365.0" y="104" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">ESP32-CAM + OV2640</text>
+<text x="1365.0" y="124" text-anchor="middle" font-size="12.5" fill="#37474f">osobny moduł w oku/głowie</text>
+<text x="1365.0" y="141" text-anchor="middle" font-size="12.5" fill="#37474f">klient Wi-Fi 192.168.4.2</text>
+<text x="1365.0" y="158" text-anchor="middle" font-size="12.5" fill="#37474f">strumień MJPEG :81/stream</text>
+<text x="1365.0" y="175" text-anchor="middle" font-size="12.5" fill="#37474f">zasilanie: 5 V z Buck 5 V</text>
+<polyline points="1250,135 1000,135 1000,240" fill="none" stroke="#00838f" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 6"/>
+<text x="1005" y="128" font-size="12" fill="#00838f" text-anchor="start" font-weight="700">Wi-Fi (klient AP)</text>
+<text x="1260" y="205" font-size="11.5" fill="#ef6c00" text-anchor="start">+ 470 µF przy złączu 5 V</text>
+<rect x="30" y="903" width="1100" height="64" rx="8" fill="#fafafa" stroke="#cfd8dc"/>
+<line x1="40" y1="925" x2="74" y2="925" stroke="#d32f2f" stroke-width="4"/>
+<text x="82" y="930" font-size="13" fill="#263238" text-anchor="start">7,4 V (bateria)</text>
+<line x1="216.5" y1="925" x2="250.5" y2="925" stroke="#ef6c00" stroke-width="4"/>
+<text x="258.5" y="930" font-size="13" fill="#263238" text-anchor="start">5 V</text>
+<line x1="303.0" y1="925" x2="337.0" y2="925" stroke="#a67c00" stroke-width="4"/>
+<text x="345.0" y="930" font-size="13" fill="#263238" text-anchor="start">6 V (serwa)</text>
+<line x1="449.5" y1="925" x2="483.5" y2="925" stroke="#2e7d32" stroke-width="4"/>
+<text x="491.5" y="930" font-size="13" fill="#263238" text-anchor="start">sterowanie silnikami / OE</text>
+<line x1="701.0" y1="925" x2="735.0" y2="925" stroke="#1565c0" stroke-width="4"/>
+<text x="743.0" y="930" font-size="13" fill="#263238" text-anchor="start">I²C</text>
+<line x1="787.5" y1="925" x2="821.5" y2="925" stroke="#6a1b9a" stroke-width="4"/>
+<text x="829.5" y="930" font-size="13" fill="#263238" text-anchor="start">I²S audio</text>
+<line x1="919.0" y1="925" x2="953.0" y2="925" stroke="#546e7a" stroke-width="4"/>
+<text x="961.0" y="930" font-size="13" fill="#263238" text-anchor="start">analog</text>
+<line x1="1028.0" y1="925" x2="1062.0" y2="925" stroke="#00838f" stroke-width="4" stroke-dasharray="8 6"/>
+<text x="1070.0" y="930" font-size="13" fill="#263238" text-anchor="start">Wi-Fi</text>
+<text x="40" y="955" font-size="12" fill="#455a64" text-anchor="start">Kondensatory: 1000 µF przy V+ PCA9685 · 470 µF przy VM TB6612FNG · 470 µF przy 5 V ESP32-CAM.  Piny GPIO0/2/12/15 (rozruchowe) i 6–11 (flash) nieużywane.</text>
+</svg>

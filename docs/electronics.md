@@ -18,7 +18,13 @@
 | Zasilanie | akumulator 2S Li-ion 7,4 V (8,4 V naładowany) + przetwornice | |
 | Łączność z telefonem | **Wi-Fi AP + WebSocket + strona WWW z ESP32** | bez instalowania aplikacji |
 
-## 2. Schemat blokowy
+## 2. Schemat połączeń
+
+![Schemat połączeń](wiring.svg)
+
+Plik źródłowy: [`wiring.svg`](wiring.svg) (wektorowy), podgląd: [`wiring.png`](wiring.png).
+
+### Schemat blokowy (wersja mermaid)
 
 ```mermaid
 flowchart LR
