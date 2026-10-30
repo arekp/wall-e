@@ -33,7 +33,7 @@
 <text x="620.0" y="644" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">MAX98357A</text>
 <text x="620.0" y="664" text-anchor="middle" font-size="12.5" fill="#37474f">wzmacniacz I²S</text>
 <text x="620.0" y="681" text-anchor="middle" font-size="12.5" fill="#37474f">VIN 5 V · głośnik 3 W</text>
-<text x="620.0" y="698" text-anchor="middle" font-size="12.5" fill="#37474f">(opcja)</text>
+<text x="620.0" y="698" text-anchor="middle" font-size="12.5" fill="#37474f">głos z telefonu + dźwięki</text>
 <polyline points="720,640 820,640" fill="none" stroke="#6a1b9a" stroke-width="2.5" stroke-linejoin="round"/>
 <text x="728" y="636" font-size="12" fill="#6a1b9a" text-anchor="start">BCLK</text>
 <polyline points="720,660 820,660" fill="none" stroke="#6a1b9a" stroke-width="2.5" stroke-linejoin="round"/>
@@ -129,12 +129,12 @@
 <text x="1660.0" y="686" text-anchor="middle" font-size="12.5" fill="#37474f">każde: sygnał + 6 V + GND</text>
 <polyline points="1480,640 1560,640" fill="none" stroke="#a67c00" stroke-width="5" stroke-linejoin="round"/>
 <text x="1520" y="630" font-size="11.5" fill="#a67c00" text-anchor="middle">PWM + 6 V</text>
-<rect x="560" y="80" width="200" height="90" rx="8" fill="#fff8e1" stroke="#37474f" stroke-width="2"/>
-<text x="660.0" y="104" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Telefon</text>
-<text x="660.0" y="124" text-anchor="middle" font-size="12.5" fill="#37474f">przeglądarka</text>
-<text x="660.0" y="141" text-anchor="middle" font-size="12.5" fill="#37474f">http://192.168.4.1</text>
-<polyline points="760,125 900,125 900,240" fill="none" stroke="#00838f" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 6"/>
-<text x="780" y="118" font-size="12" fill="#00838f" text-anchor="start" font-weight="700">Wi-Fi · WebSocket</text>
+<rect x="480" y="80" width="320" height="90" rx="8" fill="#fff8e1" stroke="#37474f" stroke-width="2"/>
+<text x="640.0" y="104" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Telefon (aplikacja Android)</text>
+<text x="640.0" y="124" text-anchor="middle" font-size="12.5" fill="#37474f">komendy + głos: ws://192.168.4.1/ws</text>
+<text x="640.0" y="141" text-anchor="middle" font-size="12.5" fill="#37474f">obraz: 192.168.4.10:81</text>
+<polyline points="800,125 900,125 900,240" fill="none" stroke="#00838f" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 6"/>
+<text x="806" y="118" font-size="12" fill="#00838f" text-anchor="start" font-weight="700">Wi-Fi</text>
 <rect x="1250" y="80" width="230" height="110" rx="8" fill="#e0f7fa" stroke="#006064" stroke-width="2"/>
 <text x="1365.0" y="104" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">ESP32-CAM + OV2640</text>
 <text x="1365.0" y="124" text-anchor="middle" font-size="12.5" fill="#37474f">osobny moduł w oku/głowie</text>

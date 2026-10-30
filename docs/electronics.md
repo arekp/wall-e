@@ -14,9 +14,9 @@
 | Sterownik serw | PCA9685 (I²C, 16 kanałów) | odciąża ESP32, zasilanie serw osobne |
 | Wyświetlacz (opcja) | OLED SSD1306 128×64 I²C (ramka `OLED_frame_v2`) | ozdoba/status; można pominąć – status pokazuje też strona na telefonie |
 | Kamera | **ESP32-CAM (AI-Thinker, OV2640) jako osobny moduł** w głowie/oku | własny procesor, strumień MJPEG; nie zajmuje pinów głównego ESP32 |
-| Dźwięk (opcja) | MAX98357A (I²S) + głośnik 3 W | |
+| Dźwięk | MAX98357A (I²S) + głośnik 3 W | wymagany do funkcji „głos z telefonu” (mówisz do telefonu, mówi Wall-E) i do zapisanych dźwięków |
 | Zasilanie | akumulator 2S Li-ion 7,4 V (8,4 V naładowany) + przetwornice | |
-| Łączność z telefonem | **Wi-Fi AP + WebSocket + strona WWW z ESP32** | bez instalowania aplikacji |
+| Łączność z telefonem | **Wi-Fi AP + WebSocket**; klient: aplikacja na Androida ([`android/`](../android/)) | protokół: [`protocol.md`](protocol.md); strona WWW z ESP32 jako ewentualna alternatywa bez aplikacji |
 
 ## 2. Schemat połączeń
 
@@ -82,9 +82,9 @@ Unikamy pinów rozruchowych (0, 2, 12, 15), pamięci flash (6–11) i wejść-ty
 | 33 | Wyjście | TB6612 `BIN1` |
 | 14 | Wyjście | TB6612 `BIN2` |
 | 13 | Wyjście | TB6612 `STBY` (HIGH = praca) |
-| 18 | I²S BCLK | MAX98357A BCLK *(opcja)* |
-| 19 | I²S LRC | MAX98357A LRC *(opcja)* |
-| 23 | I²S DIN | MAX98357A DIN *(opcja)* |
+| 18 | I²S BCLK | MAX98357A BCLK |
+| 19 | I²S LRC | MAX98357A LRC |
+| 23 | I²S DIN | MAX98357A DIN |
 | 34 | ADC (wejście) | dzielnik napięcia baterii |
 | 3V3 | zasilanie | OLED VCC, PCA9685 VCC (logika), TB6612 VCC |
 
@@ -118,16 +118,16 @@ Punkt dostępowy wystawia **tylko główny ESP32**. Telefon i ESP32-CAM to klien
 | ESP32-CAM | klient | `192.168.4.10` (stały) | strumień MJPEG `:81/stream` |
 | Telefon | klient | z DHCP (`192.168.4.2` i dalej) | przeglądarka |
 
-Strona pobrana z `192.168.4.1` używa dwóch adresów jednocześnie: WebSocket do `192.168.4.1` (komendy) i tag `<img>` do `192.168.4.10:81` (obraz). Uwaga: telefon może samoczynnie przełączyć się na dane komórkowe, bo `WALLE` nie ma internetu – na czas jazdy wyłącz dane komórkowe lub wybierz „pozostań połączony”.
+Aplikacja używa dwóch adresów jednocześnie: WebSocket do `192.168.4.1` (komendy i głos) oraz strumień MJPEG z `192.168.4.10:81` (obraz). Android potrafi samoczynnie przełączyć się na dane komórkowe, bo `WALLE` nie ma internetu – aplikacja temu zapobiega, wiążąc swój ruch z siecią robota (`WifiConnector`).
 
 ### Przebieg połączenia
 
 1. ESP32 uruchamia sieć Wi-Fi (tryb AP): SSID `WALLE`, hasło ustawiane w firmware, adres `192.168.4.1`.
-2. Telefon łączy się z tą siecią i otwiera w przeglądarce `http://192.168.4.1`.
-3. ESP32 serwuje stronę z joystickiem (jazda), suwakami serw i przyciskami emocji.
-4. Strona wysyła komendy przez WebSocket (`ws://192.168.4.1/ws`), ESP32 je interpretuje.
+2. Aplikacja na Androida ([`android/`](../android/)) łączy telefon z tą siecią i kieruje do niej ruch aplikacji.
+3. Aplikacja otwiera WebSocket `ws://192.168.4.1/ws`, wysyła komendy (jazda, serwa, pozy, dźwięki) i strumień głosu z mikrofonu.
+4. Obraz z kamery aplikacja pobiera z ESP32-CAM (`http://192.168.4.10:81/stream`).
 
-Alternatywa: BLE (np. aplikacja „Serial Bluetooth Terminal”) – ten sam protokół komend, inny transport.
+Alternatywa: strona WWW serwowana z ESP32 (ten sam protokół) – bez instalowania aplikacji. BLE nie jest planowane (za mała przepustowość na głos).
 
 ### Kamera (ESP32-CAM)
 
@@ -141,22 +141,15 @@ Kamera (ESP32-CAM) działa jako osobny moduł i nie jest podłączona do główn
 - Montaż: płytka ESP32-CAM jest duża, więc w głowie mieści się z reguły sam sensor OV2640 na dłuższej taśmie FFC (wersje z wymienną taśmą 15–30 cm), a płytka stoi w korpusie. Mocowanie w modelu: `eye-camera-mount` i `eye-camera-replica`.
 - Programowanie ESP32-CAM wymaga adaptera USB-UART (płytka AI-Thinker nie ma portu USB) albo wersji z płytką bazową ESP32-CAM-MB.
 
-### Protokół komend (JSON, jedna wiadomość = jedna komenda)
+### Protokół komend i dźwięku
 
-| Komenda | Przykład | Działanie |
-|---|---|---|
-| Jazda | `{"c":"drive","x":0.0,"y":0.8}` | joystick: y = przód/tył, x = skręt, zakres −1..1; mieszanie na lewy/prawy silnik |
-| Serwo | `{"c":"servo","id":"armL","a":45}` | ustawia serwo (id lub numer kanału) na kąt w limitach |
-| Poza | `{"c":"pose","n":"hello"}` | gotowa sekwencja serw (`home`, `hello`, `sad`, `curious`) |
-| Ekran | `{"c":"oled","t":"EVE?"}` | tekst/animacja na OLED |
-| Dźwięk | `{"c":"sound","n":"wall-e"}` | odtwarza zapisany dźwięk *(opcja)* |
-| Kamera | `{"c":"cam","on":true}` | strona włącza/wyłącza podgląd (odpina `<img>`, oszczędza pasmo) |
-| Stop | `{"c":"stop"}` | natychmiast zatrzymuje silniki |
-| Status | `{"c":"status"}` | odpowiedź: napięcie baterii, stan serw |
+Pełna specyfikacja (komendy JSON, statusy, format ramek audio, bufor, opóźnienia) jest w [`protocol.md`](protocol.md).
+Skrót: jazda, serwa, pozy, zapisane dźwięki i głośność to komendy JSON; głos z telefonu to ramki binarne PCM 16 kHz mono
+odtwarzane przez MAX98357A.
 
 ### Bezpieczeństwo
 
-- **Fail-safe:** brak komendy `drive` przez 500 ms → silniki stop (utrata Wi-Fi, rozładowany telefon).
+- **Fail-safe:** brak komendy `drive` przez 500 ms → silniki stop (utrata Wi-Fi, rozładowany telefon). Utrata WebSocketu wyłącza też odbiór głosu.
 - Limity kątów serw wymuszane w firmware, nie tylko na stronie.
 - Ograniczenie przyspieszenia silników (rampa), żeby nie szarpać przekładniami i nie obciążać baterii.
 - Niskie napięcie baterii → stop silników, komunikat na stronie (i na OLED, jeśli jest zamontowany).
@@ -179,13 +172,13 @@ Kamera (ESP32-CAM) działa jako osobny moduł i nie jest podłączona do główn
 | 1 | Bezpiecznik 5 A + wyłącznik |
 | 1 | Kondensatory 1000 µF/16 V, 470 µF/16 V |
 | 1 | Rezystory 100 kΩ i 47 kΩ (dzielnik) |
-| 1 | MAX98357A + głośnik 3 W *(opcja)* |
+| 1 | MAX98357A + głośnik 3 W (głos z telefonu, dźwięki) |
 | – | Złącza, przewody, płytka prototypowa |
 
 ## 8. Otwarte pytania
 
 1. Jakie dokładnie silniki (napięcie, prąd, enkodery?) i ile serw jest zamontowanych?
 2. ~~Kamera~~ – zdecydowane: osobny ESP32-CAM. Do ustalenia: czy sensor ma być w oku (taśma), czy cała płytka w głowie.
-3. Czy potrzebny dźwięk?
+3. ~~Dźwięk~~ – zdecydowane: tak, głos z telefonu przez głośnik robota (MAX98357A + głośnik).
 4. Jaki akumulator jest dostępny? Od tego zależą bucki i pojemność.
 5. ~~Wi-Fi~~ – zdecydowane: AP `WALLE` (zasięg ok. 10 m, bez routera).
