@@ -53,7 +53,8 @@ pozy, dźwięki, głośność) i ilość dźwięku z mikrofonu widać w dziennik
 | `AudioStreamer.kt` | nagrywanie mikrofonu i wysyłanie ramek po 20 ms |
 | `WifiConnector.kt` | połączenie z siecią robota i wiązanie ruchu aplikacji do niej |
 | `WalleViewModel.kt` | cała logika: jazda, serwa, głos, ponawianie połączenia, ustawienia |
-| `ui/Screens.kt` | ekrany Compose: joystick, serwa, przycisk mówienia, podgląd kamery |
+| `ui/Screens.kt` | ekrany Compose: połączenie, joystick, serwa, przycisk mówienia, podgląd kamery |
+| `ui/Theme.kt` | motyw w barwach Wall-E (jasny/ciemny) |
 
 ## Znane ograniczenia
 
