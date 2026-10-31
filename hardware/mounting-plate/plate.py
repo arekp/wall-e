@@ -58,10 +58,8 @@ MODULES = [
            note="klony 51–55 x 25–28; rozstaw rzędów 22,86 lub 25,4"),
     Module("PCA9685", 62.5, 25.4, note="jedno źródło; inne oferty 60 x 25"),
     # wiersz B
-    Module("TB6612FNG", 25.4, 22.9, note="SparkFun 20,3 kw.; klony 24x21 .. 25,4x22,9 – wzięto największy"),
     Module("MAX98357A", 19.4, 17.8, note="Adafruit 19,4 x 17,8"),
     Module("Buck 5 V (LM2596)", 43.0, 21.0, note="⚠️ założenie – nie sprawdzano w sieci"),
-    Module("ESP32-CAM", 27.0, 40.5, note="27 x 40,5 (kilka źródeł)"),
     # wiersz C
     Module("Buck 6 V 5 A", 51.0, 23.0, note="⚠️ założenie (typ XL4015) – nie sprawdzano w sieci"),
 ]
@@ -76,7 +74,7 @@ def layout() -> tuple[float, float]:
     def pw(m): return m.w + 2 * CLEAR
     def pd(m): return m.d + 2 * CLEAR
     esp, pca = BY["ESP32 DevKit 38p"], BY["PCA9685"]
-    tb, amp, b5, cam, b6 = (BY[n] for n in ("TB6612FNG", "MAX98357A", "Buck 5 V (LM2596)", "ESP32-CAM", "Buck 6 V 5 A"))
+    amp, b5, b6 = (BY[n] for n in ("MAX98357A", "Buck 5 V (LM2596)", "Buck 6 V 5 A"))
 
     y = MARGIN
     esp.x, esp.y = MARGIN, y
@@ -84,14 +82,9 @@ def layout() -> tuple[float, float]:
     rowA = max(pd(esp), pd(pca))
 
     y = MARGIN + rowA + GAP
-    tb.x, tb.y = MARGIN, y
-    amp.x, amp.y = tb.x + pw(tb) + GAP, y
-    cam.x, cam.y = amp.x + pw(amp) + GAP, y
-    rowB = max(pd(tb), pd(amp), pd(cam))
-
-    y = MARGIN + rowA + GAP + rowB + GAP
     b5.x, b5.y = MARGIN, y
     b6.x, b6.y = b5.x + pw(b5) + GAP, y
+    amp.x, amp.y = b6.x + pw(b6) + GAP, y
 
     W = max(m.x + pw(m) for m in MODULES) + MARGIN
     D = max(m.y + pd(m) for m in MODULES) + MARGIN
