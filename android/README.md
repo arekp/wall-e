@@ -16,6 +16,11 @@ Kotlin + Jetpack Compose. Łączy się z siecią Wi-Fi `WALLE` robota i steruje 
 - **Kamera:** podgląd MJPEG z ESP32-CAM (`http://192.168.4.10:81/stream`).
 - **Status:** napięcie akumulatora, stan połączenia.
 
+## Wygląd
+
+Motyw z bajki: żółta blacha, rdza i piaskowe tło, czcionka monospace. Logo (oczy-lornetka Wall-E, własny rysunek wektorowy
+`res/drawable/ic_walle_logo.xml`) jest ikoną aplikacji i widnieje w nagłówku. Paleta: `ui/Theme.kt`.
+
 ## Instalacja na telefonie i aktualizacje
 
 Każdy build na GitHub Actions publikuje wydanie z podpisanym APK. Stały adres do pobrania najnowszej wersji:

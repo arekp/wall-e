@@ -9,6 +9,7 @@ import android.webkit.WebView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -54,11 +55,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import pl.walle.app.LinkState
+import pl.walle.app.R
 import pl.walle.app.POSES
 import pl.walle.app.SERVOS
 import pl.walle.app.SOUNDS
@@ -72,7 +75,7 @@ fun WalleApp(vm: WalleViewModel) {
     val link by vm.client.state.collectAsState()
     val status by vm.client.status.collectAsState()
 
-    Scaffold { padding ->
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
             Header(
                 link = link,
@@ -84,7 +87,11 @@ fun WalleApp(vm: WalleViewModel) {
                 onDisconnect = vm::disconnect,
                 onSettings = { showSettings = true },
             )
-            TabRow(selectedTabIndex = tab) {
+            TabRow(
+                selectedTabIndex = tab,
+                containerColor = WalleRust,
+                contentColor = WalleYellow,
+            ) {
                 Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("Jazda i głos") })
                 Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Serwa") })
             }
@@ -118,13 +125,19 @@ private fun Header(
     onDisconnect: () -> Unit,
     onSettings: () -> Unit,
 ) {
+    val lowBattery = battery != null && battery < LOW_BATTERY_V
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+        Modifier.fillMaxWidth().background(WalleDark).padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        Image(
+            painterResource(R.drawable.ic_walle_logo),
+            contentDescription = "Logo Wall-E",
+            modifier = Modifier.size(56.dp).background(WalleYellow, RoundedCornerShape(12.dp)),
+        )
         Column(Modifier.weight(1f)) {
-            Text("Wall-E", style = MaterialTheme.typography.titleLarge)
+            Text("WALL·E", color = WalleYellow, style = MaterialTheme.typography.titleLarge)
             val stateText = when (link) {
                 LinkState.CONNECTED -> if (demo) "tryb demo (symulacja)" else "połączony"
                 LinkState.CONNECTING -> "łączenie…"
@@ -133,15 +146,15 @@ private fun Header(
             val bat = battery?.let { " · bateria %.2f V".format(it) } ?: ""
             Text(
                 stateText + bat,
-                color = if (battery != null && battery < LOW_BATTERY_V) Color(0xFFC62828) else Color.Unspecified,
+                color = if (lowBattery) Color(0xFFFF8A80) else WalleSand,
                 style = MaterialTheme.typography.bodySmall,
             )
         }
-        TextButton(onClick = onSettings) { Text("Ustawienia") }
+        TextButton(onClick = onSettings) { Text("Ustawienia", color = WalleSand) }
         if (wantConnection) {
-            OutlinedButton(onClick = onDisconnect) { Text("Rozłącz") }
+            OutlinedButton(onClick = onDisconnect) { Text("Rozłącz", color = WalleSand) }
         } else {
-            OutlinedButton(onClick = onDemo) { Text("Demo") }
+            OutlinedButton(onClick = onDemo) { Text("Demo", color = WalleSand) }
             Button(onClick = onConnect) { Text("Połącz") }
         }
     }
@@ -191,7 +204,7 @@ private fun DriveTab(vm: WalleViewModel, connected: Boolean) {
                 Button(
                     onClick = vm::stop,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828)),
+                    colors = ButtonDefaults.buttonColors(containerColor = WalleDanger, contentColor = Color.White),
                 ) { Text("STOP") }
                 Text("Głośność robota", style = MaterialTheme.typography.bodySmall)
                 Slider(
@@ -263,7 +276,7 @@ private fun TalkButton(
     val bg = when {
         !enabled -> Color(0xFF9E9E9E)
         talking -> Color(0xFF2E7D32)
-        else -> MaterialTheme.colorScheme.primary
+        else -> WalleRust
     }
     Box(
         Modifier

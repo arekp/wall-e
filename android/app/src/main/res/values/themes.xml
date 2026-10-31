@@ -1,3 +1,7 @@
 <resources>
-    <style name="Theme.WallE" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.WallE" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#F6E7C1</item>
+        <item name="android:statusBarColor">#2B2118</item>
+        <item name="android:navigationBarColor">#F6E7C1</item>
+    </style>
 </resources>

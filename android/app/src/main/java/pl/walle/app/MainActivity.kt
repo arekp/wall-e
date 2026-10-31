@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material3.MaterialTheme
 import pl.walle.app.ui.WalleApp
+import pl.walle.app.ui.WalleTheme
 
 class MainActivity : ComponentActivity() {
     private val vm: WalleViewModel by viewModels()
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            WalleTheme {
                 WalleApp(vm)
             }
         }
