@@ -19,7 +19,7 @@ Kotlin + Jetpack Compose. Łączy się z siecią Wi-Fi `WALLE` robota i steruje 
 ## Wygląd
 
 Motyw z bajki: żółta blacha, rdza i piaskowe tło, czcionka monospace. Logo (oczy-lornetka Wall-E, własny rysunek wektorowy
-`res/drawable/ic_walle_logo.xml`) jest ikoną aplikacji i widnieje w nagłówku. Paleta: `ui/Theme.kt`.
+`res/drawable/ic_walle_logo.xml`) jest ikoną aplikacji ; w nagłówku rysowana jest jego uproszczona wersja (`RobotFace` w `ui/Screens.kt`). Paleta: `ui/Theme.kt`.
 
 ## Instalacja na telefonie i aktualizacje
 
