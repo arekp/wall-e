@@ -8,5 +8,7 @@ Projhekt wewenytzny bazujacy na innych prjektach z interentu
 - https://www.thingiverse.com/thing:3703555
 - https://www.printables.com/model/408363-wall-e
 - https://github.com/chillibasket/walle-replica?tab=readme-ov-file
+- 
 Najnowszy 
 - https://www.youtube.com/watch?v=r7WV-IAMnDo
+- schetamt polaczen https://www.huyvector.org/robots-kinetic/full-3d-wall-e-ai
