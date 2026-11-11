@@ -1,0 +1,52 @@
+name: Android build
+
+on:
+  push:
+    paths:
+      - "android/**"
+      - ".github/workflows/android.yml"
+  pull_request:
+    paths:
+      - "android/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+      - name: Build debug APK
+        run: gradle --no-daemon assembleDebug
+      - name: Name the APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk walle.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: walle-debug-apk
+          path: android/walle.apk
+      # Każdy udany build z gałęzi roboczej/main to wydanie z APK; stały adres pobierania:
+      # https://github.com/<repo>/releases/latest/download/walle.apk
+      - name: Publish release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: Wall-E 0.1.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          files: android/walle.apk
+          body: |
+            Automatyczny build aplikacji Wall-E (commit ${{ github.sha }}).
+            Instalacja: pobierz walle.apk na telefon i otwórz (zezwól na instalację z tego źródła).

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Logo: głowa Wall-E (oczy-lornetka na szyi). Używane jako pierwszy plan ikony i w nagłówku aplikacji. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- szyja -->
+    <path android:fillColor="#6B5E52" android:pathData="M46,70h16v14h-16z" />
+    <path android:fillColor="#4A4038" android:pathData="M46,74h16v2h-16z M46,79h16v2h-16z" />
+    <!-- mostek między oczami -->
+    <path android:fillColor="#4A4038" android:pathData="M46,50h16v8h-16z" />
+    <!-- lewa obudowa oka -->
+    <path android:fillColor="#7A6A5A" android:pathData="M24,36h24a4,4 0 0 1 4,4v26a4,4 0 0 1 -4,4h-24a4,4 0 0 1 -4,-4v-26a4,4 0 0 1 4,-4z" />
+    <!-- prawa obudowa oka -->
+    <path android:fillColor="#7A6A5A" android:pathData="M60,36h24a4,4 0 0 1 4,4v26a4,4 0 0 1 -4,4h-24a4,4 0 0 1 -4,-4v-26a4,4 0 0 1 4,-4z" />
+    <!-- osłony soczewek -->
+    <path android:fillColor="#2B2118" android:pathData="M36,53m-11,0a11,11 0 1 0 22,0a11,11 0 1 0 -22,0" />
+    <path android:fillColor="#2B2118" android:pathData="M72,53m-11,0a11,11 0 1 0 22,0a11,11 0 1 0 -22,0" />
+    <!-- soczewki -->
+    <path android:fillColor="#3E8FC4" android:pathData="M36,53m-7,0a7,7 0 1 0 14,0a7,7 0 1 0 -14,0" />
+    <path android:fillColor="#3E8FC4" android:pathData="M72,53m-7,0a7,7 0 1 0 14,0a7,7 0 1 0 -14,0" />
+    <!-- źrenice i odblaski -->
+    <path android:fillColor="#0E2A3D" android:pathData="M36,53m-3.5,0a3.5,3.5 0 1 0 7,0a3.5,3.5 0 1 0 -7,0" />
+    <path android:fillColor="#0E2A3D" android:pathData="M72,53m-3.5,0a3.5,3.5 0 1 0 7,0a3.5,3.5 0 1 0 -7,0" />
+    <path android:fillColor="#FFFFFF" android:pathData="M33.5,50.5m-1.5,0a1.5,1.5 0 1 0 3,0a1.5,1.5 0 1 0 -3,0" />
+    <path android:fillColor="#FFFFFF" android:pathData="M69.5,50.5m-1.5,0a1.5,1.5 0 1 0 3,0a1.5,1.5 0 1 0 -3,0" />
+</vector>
