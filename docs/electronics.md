@@ -24,6 +24,8 @@
 
 Plik źródłowy: [`wiring.svg`](wiring.svg) (wektorowy), podgląd: [`wiring.png`](wiring.png).
 
+Montaż modułów na płytce drukowanej 3D: [`mounting-plate.md`](mounting-plate.md).
+
 ### Schemat blokowy (wersja mermaid)
 
 ```mermaid
