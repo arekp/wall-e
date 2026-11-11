@@ -3,8 +3,7 @@
 Kotlin + Jetpack Compose. Łączy się z siecią Wi-Fi `WALLE` robota i steruje nim przez WebSocket
 (protokół: [`../docs/protocol.md`](../docs/protocol.md)).
 
-> **Status: kod napisany, ale jeszcze niezbudowany ani nieprzetestowany** (brak Android SDK w środowisku, w którym powstał).
-> Pierwszy krok to otwarcie projektu w Android Studio i sprawdzenie, czy się kompiluje.
+> **Status:** buduje się na GitHub Actions (`.github/workflows/android.yml`) i ma tryb demo. **Nie była jeszcze testowana z prawdziwym robotem** ani z firmware ESP32 (firmware jeszcze nie istnieje).
 
 ## Funkcje
 

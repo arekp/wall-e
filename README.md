@@ -11,7 +11,7 @@ kamerą w oku i sterowaniem z telefonu przez Wi-Fi. Projekt bazuje na innych pro
 | Silniki i serwa | dostępne |
 | Elektronika | **zaprojektowana, jeszcze niezmontowana** – założenia do potwierdzenia, patrz [`docs/electronics.md`](docs/electronics.md) |
 | Protokół komend i dźwięku | opisany: [`docs/protocol.md`](docs/protocol.md) |
-| Aplikacja na Androida | napisana, **jeszcze nie zbudowana ani nie testowana** – patrz [`android/`](android/) |
+| Aplikacja na Androida | buduje się na GitHub Actions (APK w [wydaniach](https://github.com/arekp/wall-e/releases/latest)), ma tryb demo; **nietestowana z prawdziwym robotem** – patrz [`android/`](android/) |
 | Firmware ESP32 (główny) | planowany |
 | Firmware ESP32-CAM | planowany |
 
