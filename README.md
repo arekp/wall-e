@@ -61,3 +61,5 @@ Projekt powstał na podstawie poniższych prac; przed publikacją własnych zmia
 - https://www.thingiverse.com/thing:3703555
 - https://www.printables.com/model/408363-wall-e
 - https://github.com/chillibasket/walle-replica
+- https://www.youtube.com/watch?v=r7WV-IAMnDo (najnowszy film)
+- https://www.huyvector.org/robots-kinetic/full-3d-wall-e-ai (schemat połączeń w pokrewnym projekcie – do porównania z `docs/wiring.svg`)
