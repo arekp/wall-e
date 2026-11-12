@@ -10,7 +10,7 @@
 | Mikrokontroler | ESP32 DevKit (38 pin, WROOM-32) | jedyny sterownik, brak Arduino |
 | Napęd | 2 × silnik DC z przekładnią (gąsienice) ⚠️ | 6–12 V, prąd < 1 A na silnik |
 | Sterownik silników | TB6612FNG (zamiennie L298N) | TB6612: 1,2 A ciągłe, mniejsze straty |
-| Serwa | do 9 szt. ⚠️ (szyja ×2, głowa, ramiona ×2, oczy ×2, dłonie ×2 opcjonalnie) | 5–6 V, np. MG90S / SG90 |
+| Serwa | do 9 szt. ⚠️ (szyja ×2, głowa, ramiona ×2, oczy ×2, dłonie ×2 opcjonalnie) | **MG90S micro (potwierdzone)**; 4,8–6 V, ok. 1,8 kg·cm przy 4,8 V i 2,2 kg·cm przy 6 V; prąd w ruchu ok. 0,2–0,3 A, w zatrzymaniu do ok. 0,7–0,9 A (wg typowych kart katalogowych, nie mierzone) |
 | Sterownik serw | PCA9685 (I²C, 16 kanałów) | odciąża ESP32, zasilanie serw osobne |
 | Wyświetlacz (opcja) | OLED SSD1306 128×64 I²C (ramka `OLED_frame_v2`) | ozdoba/status; można pominąć – status pokazuje też strona na telefonie |
 | Kamera | **ESP32-CAM (AI-Thinker, OV2640) jako osobny moduł** w głowie/oku | własny procesor, strumień MJPEG; nie zajmuje pinów głównego ESP32 |
@@ -67,6 +67,7 @@ Zasady:
 - Pomiar baterii: dzielnik 100 kΩ / 47 kΩ do GPIO34 (8,4 V → 2,69 V). Odcięcie programowe poniżej 6,6 V.
 - ESP32-CAM pobiera ok. 180–300 mA (szczyty przy transmisji), dlatego przy jej złączu 5 V dajemy 470 µF; dioda flash (GPIO4 kamery) pozostaje wyłączona.
 - Rezerwa prądowa: serwa w ruchu do ok. 2–3 A, dlatego osobny buck 6 V ≥ 5 A.
+- Buck 6 V ustaw **dokładnie na 6,0 V** (multimetrem, przed podłączeniem PCA9685) – MG90S ma maksimum 6 V; nie ustawiaj 7,2 V.
 
 ## 4. Mapa pinów ESP32
 
