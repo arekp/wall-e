@@ -37,7 +37,7 @@ SHELF = 3.5          # wielkość półki
 TIE_W, TIE_H = 4.4, 2.0   # otwór na opaskę zaciskową 2,5–3,6 mm
 HOLE_D = 3.4         # otwory M3 płyty (w pasach między rzędami modułów)
 HOLE_X = (12.0, 8.0)  # odległość otworów od lewej / prawej krawędzi płyty
-SPACER_H, SPACER_OD = 12.0, 8.0   # musi być > wystające piny ESP32 (ok. 8,5 mm) + grubość płyty
+SPACER_H, SPACER_OD = 12.0, 8.0   # min. 12 (piny ESP32 ok. 8,5 mm + płyta). POD płytą leży akumulator: wysokość odstępnika = wys. akumulatora + 3 mm zapasu, gdy > 12
 
 # Wnętrze korpusu – wymiary wyciągnięte z modelu 3MF (części rozłożone na stołach druku, NIE złożone!).
 # Źródło i pewność: docs/mounting-plate.md, pkt 4. ⚠️ Pionowe luzy i kolizje z serwami/silnikami nie sprawdzone.
@@ -53,8 +53,7 @@ ROLE = {
     "Buck 5 V (LM2596)": "3|Buck 5 V: ESP32, MAX98357A (+ ESP32-CAM). Wejście z baterii",
     "Buck 6 V 5 A": "4|Buck 6 V: tylko serwa (V+ PCA9685). Wejście z baterii",
     "MAX98357A": "5|MAX98357A: głośnik, I2S z ESP32, 5 V z buck 5 V",
-    "Akumulator 2S": "6|Akumulator 2S: bezpiecznik 5 A + wyłącznik w przewodzie +",
-    "TB6612FNG": "7|TB6612: silniki gąsienic, VM wprost z baterii (+470 µF)",
+    "TB6612FNG": "6|TB6612: silniki gąsienic, VM wprost z baterii (+470 µF)",
 }
 
 
@@ -67,7 +66,7 @@ class Module:
     y: float = 0.0
     shelf: bool = True  # półki w narożnikach
     pin_slots: bool = False  # przelotowe szczeliny pod piny (ESP32 z kołkami w dół)
-    bh: float = BR_H    # wysokość kątowników ponad półką (wyższe dla akumulatora)
+    bh: float = BR_H    # wysokość kątowników ponad półką
     note: str = ""
 
 
@@ -82,15 +81,13 @@ MODULES = [
     Module("Buck 6 V 5 A", 51.0, 23.0, note="⚠️ założenie (typ XL4015) – nie sprawdzano w sieci"),
     Module("MAX98357A", 19.4, 17.8, note="Adafruit 19,4 x 17,8"),
     # rząd 3
-    Module("Akumulator 2S", 80.0, 40.0, bh=8.0,
-           note="⚠️ założenie: 2 x 18650 w koszyku/pakiecie ok. 80 x 40 x 20; dla LiPo 2S 2200 mAh (ok. 105 x 35) zmień wymiary"),
     Module("TB6612FNG", 25.4, 22.9, note="klony 24 x 21 – 25,4 x 22,9"),
 ]
 BY = {m.name: m for m in MODULES}
 ROWS = [
     ["ESP32 DevKit 38p", "PCA9685"],
     ["Buck 5 V (LM2596)", "Buck 6 V 5 A", "MAX98357A"],
-    ["Akumulator 2S", "TB6612FNG"],
+    ["TB6612FNG"],
 ]
 # ESP32 stoi na kołkach w dół → szczeliny pod piny; rozstaw szczelin obejmuje 22,86 i 25,4 mm
 ESP_SLOT_C, ESP_SLOT_W, ESP_SLOT_L = 11.5, 5.0, 50.0
@@ -275,6 +272,7 @@ def preview(W, D):
     for i, (num, text) in enumerate(sorted(legend)):
         fig.text(0.58, 0.84 - i * 0.085, f"{num}.  {text}", fontsize=9.5, wrap=True, va="top")
     fig.text(0.58, 0.84 - len(legend) * 0.085 - 0.02,
+             "Akumulator NIE jest na płytce – leży pod nią (rozmiar do ustalenia).\n"
              "Zasilanie: bateria → bezpiecznik → wyłącznik → bucki i TB6612.\n"
              "Masy wszystkich modułów połączone razem (wspólna masa).\n"
              "Przewody wychodzą od spodu przez otwory na opaski.", fontsize=9, va="top", style="italic")
@@ -306,6 +304,10 @@ def check_layout(W, D):
 
 
 def main():
+    global SPACER_H
+    if len(sys.argv) > 1:   # np. python3 plate.py 35  → odstępnik 35 mm (wysokość akumulatora + 3 mm)
+        SPACER_H = float(sys.argv[1])
+        assert SPACER_H >= 12, "odstępnik < 12 mm: piny ESP32 oprą się o dno"
     plate, W, D = build_plate()
     check_layout(W, D)
     coupon = build_coupon()
