@@ -29,8 +29,6 @@ val SERVOS = listOf(
     ServoDef("armR", "Ramię prawe", 0, 120, 0),
     ServoDef("eyeL", "Oko lewe", 30, 150, 90),
     ServoDef("eyeR", "Oko prawe", 30, 150, 90),
-    ServoDef("handL", "Dłoń lewa", 0, 90, 45),
-    ServoDef("handR", "Dłoń prawa", 0, 90, 45),
 )
 
 val POSES = listOf("home" to "Domyślna", "hello" to "Cześć", "sad" to "Smutny", "curious" to "Ciekawski")

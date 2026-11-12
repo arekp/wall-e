@@ -104,8 +104,8 @@ Adresy I²C: PCA9685 = `0x40`, OLED = `0x3C`.
 | 4 | Ramię prawe | 0–120 | 0 |
 | 5 | Oko lewe | 30–150 | 90 |
 | 6 | Oko prawe | 30–150 | 90 |
-| 7 | *(zarezerwowany – dłoń lewa, nieużywana)* | 0–90 | 45 |
-| 8 | *(zarezerwowany – dłoń prawa, nieużywana)* | 0–90 | 45 |
+
+Kanały 7–15 są wolne (dłonie nie mają serw).
 
 Zakresy trzeba skalibrować mechanicznie na gotowym modelu (ograniczenia w firmware, żeby serwo nie dobijało do oporu).
 

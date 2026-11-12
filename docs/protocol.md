@@ -25,7 +25,7 @@ Ten dokument jest jedynym źródłem prawdy dla komunikacji. Używa go aplikacja
 | Ekran | `{"c":"oled","t":"EVE?"}` | tekst na OLED (jeśli jest zamontowany) |
 | Status | `{"c":"status"}` | prosi o status |
 
-Identyfikatory serw (`id`): `neckLow`(0), `neckUp`(1), `head`(2), `armL`(3), `armR`(4), `eyeL`(5), `eyeR`(6), `handL`(7), `handR`(8).
+Identyfikatory serw (`id`): `neckLow`(0), `neckUp`(1), `head`(2), `armL`(3), `armR`(4), `eyeL`(5), `eyeR`(6). Dłonie nie mają serw (ustawiane ręcznie).
 Numer w nawiasie to kanał PCA9685. Robot przyjmuje też sam numer kanału (`"id":3`).
 
 ## Statusy (robot → aplikacja, tekst JSON)
