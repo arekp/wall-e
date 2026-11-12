@@ -2,6 +2,8 @@
 
 Status: **projekt nieprzetestowany** – siatki STL są poprawne geometrycznie (zamknięte, wygenerowane skryptem), ale płytka **nie była drukowana** ani przymierzana do prawdziwych modułów. Najpierw wydrukuj szablon (pkt 3).
 
+**Wersja 2 (przeliczona pod model 3MF z Printables):** płyta ma 135 × 123 mm (była 157 × 84), mieści się we wnętrzu korpusu i ma kieszeń na **akumulator 2S** oraz **TB6612FNG**. Wymiary wnętrza pochodzą z rozłożonych części 3MF – pkt 4.
+
 Pliki: [`hardware/mounting-plate/`](../hardware/mounting-plate/) – `plate.py` (generator, jedyne źródło wymiarów), `walle_plate.stl`, `walle_fit_coupon.stl`, `walle_spacer.stl`, `preview.png`.
 
 ![Podgląd](../hardware/mounting-plate/preview.png)
@@ -14,12 +16,12 @@ Sprawdzone wzorce z internetu (płytki pod ESP32 na Printables/MakerWorld, porad
 - Moduły są unieruchamiane opaską zaciskową 2,5–3,6 mm przez dwa otwory przy kieszeni (prowadzona w poprzek krótszego boku).
 - Pod narożnikami płytek (poza ESP32) są półki 2,5 mm, żeby lutowania od spodu nie opierały się o płytę.
 - **ESP32** ma kołki zlutowane w dół: pod obydwoma rzędami pinów jest szczelina przelotowa (obejmuje rozstaw 22,86 i 25,4 mm). Dlatego płyta stoi na odstępnikach.
-- Cztery otwory M3 w narożnikach; odstępniki ≥ 12 mm (kupne M3 żeńsko-żeńskie albo `walle_spacer.stl`, 4 szt.).
-- Bez podpór: wszystkie ścianki pionowe, płyta płasko na stole. Płyta ma 157,2 × 84,2 mm i 3,5 mm grubości (do 10,5 mm z kątownikami).
+- Cztery otwory M3 w pasach między rzędami modułów (nie w narożnikach – tam stoją kieszenie); odstępniki ≥ 12 mm (kupne M3 żeńsko-żeńskie albo `walle_spacer.stl`, 4 szt.).
+- Bez podpór: wszystkie ścianki pionowe, płyta płasko na stole. Płyta ma 135,2 × 122,8 mm i 3,5 mm grubości (do 14 mm z kątownikami przy akumulatorze, 10,5 mm przy modułach).
 
-Rozmieszczenie: dół – ESP32, PCA9685; góra – buck 5 V, buck 6 V, MAX98357A.
+Rozmieszczenie (3 rzędy, `ROWS` w `plate.py`): dół – ESP32, PCA9685; środek – buck 5 V, buck 6 V, MAX98357A; góra – **akumulator 2S** (kieszeń 80 × 40 mm, kątowniki 8 mm + opaska przez dwa otwory) i TB6612FNG blisko akumulatora (silniki biorą VM wprost z baterii). Akumulator leży na samej płycie – środek ciężkości nisko.
 
-**Poza płytką:** ESP32-CAM (osobny moduł w głowie/korpusie, ma tylko zasilanie i masę) oraz sterownik silników TB6612FNG (montaż osobno, np. przy silnikach). Gdyby jednak mieli wrócić, dodaj ich do `MODULES` i `layout()` w `plate.py` (wymiary: ESP32-CAM 27 × 40,5 mm, TB6612 klony 24 × 21 – 25,4 × 22,9 mm).
+**Poza płytką:** ESP32-CAM (osobny moduł w głowie/korpusie, ma tylko zasilanie i masę). Bezpiecznik, wyłącznik i kondensatory nie mają kieszeni – lutuj je w przewodzie przy modułach.
 
 ## 2. Wymiary i piny – co sprawdzono
 
@@ -32,10 +34,12 @@ Strony producentów (Adafruit, SparkFun, Espressif) były w tej sesji **niedost�
 | MAX98357A | 19,4 × 17,8 | średnia | [Adafruit 3006](https://www.adafruit.com/products/3006); klony mogą się różnić |
 | Buck 5 V 3 A | 43 × 21 | ⚠️ założenie | Typowy LM2596 – **nie sprawdzano** |
 | Buck 6 V 5 A | 51 × 23 | ⚠️ założenie | Typowy XL4015 – **nie sprawdzano** |
+| TB6612FNG | 25,4 × 22,9 | niska–średnia | Górna granica z klonów (24 × 21 – 25,4 × 22,9) |
+| Akumulator 2S | 80 × 40 (wys. ok. 20) | ⚠️ założenie | Akumulator nie jest jeszcze wybrany (`electronics.md`). Przyjęto 2 × 18650 w koszyku; **LiPo 2S ok. 105 × 35 też wejdzie** po zmianie wymiarów w `MODULES` (kontrola szerokości w `plate.py` pilnuje limitu) |
 
 Nie zmieniałem pinów ani kanałów serw – piny pozostają wg [`electronics.md`](electronics.md). Płyta nie narzuca kolejności pinów; kable idą od spodu i górą przez otwory na opaski.
 
-Nie ujęto: akumulatora 2S, bezpiecznika, wyłącznika, kondensatorów (1000 µF, 470 µF – lutować przy złączach modułów) ani samego korpusu robota. **Wnętrze korpusu modelu z Printables nie zostało zmierzone**, więc nie wiadomo, czy płyta 157 × 84 mm się w nim zmieści – to pierwsze, co trzeba sprawdzić.
+Nie ujęto: bezpiecznika, wyłącznika i kondensatorów (1000 µF, 470 µF – lutować przy złączach modułów).
 
 ## 3. Jak sprawdzić przed drukiem
 
@@ -43,3 +47,22 @@ Nie ujęto: akumulatora 2S, bezpiecznika, wyłącznika, kondensatorów (1000 µF
 2. Wydrukuj `walle_fit_coupon.stl` (ok. 6 cm³, kilkanaście minut): same obrysy kieszeni z kątownikami. Przyłóż moduły – mają wchodzić z lekkim oporem; jeśli luźno lub ciasno, zmień `CLEAR`.
 3. Dopiero potem drukuj `walle_plate.stl`: PETG, warstwa 0,2 mm, 4 ścianki, brim (duża płaska płyta lubi się wyginać – **nie testowane**).
 4. Odtworzenie plików po zmianach: `pip install trimesh manifold3d numpy matplotlib scipy networkx && python3 hardware/mounting-plate/plate.py`.
+
+## 4. Wnętrze korpusu – co wiadomo z modelu 3MF
+
+Plik `RECOMENDED_WALL-E_Full_Pieces.3mf` (Printables, autor Kat; korpus skalowany ok. 41 % filmowego) zawiera **części rozłożone na stołach druku, nie złożony model**. Zmierzyłem z niego (siatki, nie rysunki):
+
+| Część | Wymiar [mm] | Wniosek |
+|---|---|---|
+| `body-bottom` | 156 × 161,3 × 5 | obrys dna; dno ma od spodu zagłębienie 136 × 123,6 |
+| `body-front`, `body-back` | 141,9 szer. × 143 wys. | wchodzą między ściany boczne → **wnętrze ok. 142 mm szer.** |
+| `body-left/right` | 162,7 × 143, płyta ok. 6–8 mm | wysokość korpusu ok. 143 mm |
+| `body-front-door` | 120,5 × 84,4 | klapa/okno w froncie – tędy nie włożysz płyty 135 mm, montuj przed zamknięciem korpusu |
+
+Limity w `plate.py` (`INNER_W_MAX = 142`, `FIT_CLEAR_W = 3`, `INNER_D_MAX = 123,6`) wymuszają, żeby płyta się mieściła: skrypt zgłasza błąd, jeśli zmiana wymiarów modułów ją powiększy.
+
+**Niezweryfikowane (zrób przymiarkę na wydrukowanych częściach korpusu):**
+- Głębokość wnętrza przyjęto ostrożnie jako 123,6 mm (zagłębienie na spodzie dna); faktyczna jest prawdopodobnie większa, ale grubości ścian przedniej/tylnej nie wyznaczyłem.
+- **Wysokość i kolizje**: nie sprawdzono zestawu z serwami szyi/ramion, silnikami ani żebrami w ścianach bocznych. Stos: odstępnik 12 + płyta 3,5 + kątowniki ≈ 26 mm nad dnem, plus wysokość modułów (kondensatory bucków, ESP32 ok. 15–20 mm).
+- **Sposób mocowania**: dno ma własne otwory (m.in. 4 × ⌀3 w rozstawie 100 × 58 mm, 4 × ⌀3 w rozstawie 40 × 17 mm), ale **nie wiem, do czego służą** (silniki? zaczepy?), więc otwory M3 płyty nie są z nimi zgrane. Płytę możesz przykręcić przez odstępniki do wywierconych otworów, przykleić do dna na gorący klej lub zgrać otwory po przymiarce – pozycje to `HOLE_X` i `ROW_GAP` w `plate.py`.
+- Dopasowanie do korpusu to tylko porównanie wymiarów, nie symulacja złożenia.

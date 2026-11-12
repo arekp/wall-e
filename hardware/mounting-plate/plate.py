@@ -26,17 +26,24 @@ OUT = Path(__file__).parent
 # ───────────────────────── parametry druku ─────────────────────────
 CLEAR = 0.3          # luz na stronę między modułem a kieszenią (FDM: 0.2–0.4)
 PLATE_T = 3.5        # grubość płyty
-MARGIN = 11.0        # odstęp modułów od krawędzi płyty
-GAP = 10.0           # odstęp między rzędami modułów (miejsce na opaskę i przewody)
+MARGIN = 5.0         # odstęp modułów od krawędzi płyty
+GAP = 5.0            # odstęp między modułami w tym samym rzędzie
+ROW_GAP = 10.0       # odstęp między rzędami (opaski, przewody i otwory M3 płyty)
 BR_H = 4.5           # wysokość narożnych kątowników ponad półką
 BR_ARM = 7.0         # długość ramienia kątownika
 BR_T = 1.6           # grubość ścianki kątownika (4 ścieżki dyszy 0.4)
 SHELF_H = 2.5        # wysokość półki pod narożnikami (luz na lutowania od spodu modułu)
 SHELF = 3.5          # wielkość półki
 TIE_W, TIE_H = 4.4, 2.0   # otwór na opaskę zaciskową 2,5–3,6 mm
-HOLE_D = 3.4         # otwory M3 w narożnikach płyty
-HOLE_INSET = 6.0
+HOLE_D = 3.4         # otwory M3 płyty (w pasach między rzędami modułów)
+HOLE_X = (12.0, 8.0)  # odległość otworów od lewej / prawej krawędzi płyty
 SPACER_H, SPACER_OD = 12.0, 8.0   # musi być > wystające piny ESP32 (ok. 8,5 mm) + grubość płyty
+
+# Wnętrze korpusu – wymiary wyciągnięte z modelu 3MF (części rozłożone na stołach druku, NIE złożone!).
+# Źródło i pewność: docs/mounting-plate.md, pkt 4. ⚠️ Pionowe luzy i kolizje z serwami/silnikami nie sprawdzone.
+INNER_W_MAX = 142.0   # front/tył mają 141,9 mm i wchodzą między ściany boczne
+INNER_D_MAX = 123.6   # pewny obszar dna (obrys 136 x 123,6 mm na spodzie body-bottom); głębiej niż to nie liczyć
+FIT_CLEAR_W = 3.0     # wymagany zapas na stronę w szerokości
 
 
 @dataclass
@@ -48,44 +55,49 @@ class Module:
     y: float = 0.0
     shelf: bool = True  # półki w narożnikach
     pin_slots: bool = False  # przelotowe szczeliny pod piny (ESP32 z kołkami w dół)
+    bh: float = BR_H    # wysokość kątowników ponad półką (wyższe dla akumulatora)
     note: str = ""
 
 
 # Wymiary modułu (PCB, bez luzu). ŹRÓDŁA i pewność: docs/mounting-plate.md
 MODULES = [
-    # wiersz A
-    Module("ESP32 DevKit 38p", 55.0, 28.0, pin_slots=False, shelf=False,
+    # rząd 1
+    Module("ESP32 DevKit 38p", 55.0, 28.0, shelf=False, pin_slots=True,
            note="klony 51–55 x 25–28; rozstaw rzędów 22,86 lub 25,4"),
     Module("PCA9685", 62.5, 25.4, note="jedno źródło; inne oferty 60 x 25"),
-    # wiersz B
-    Module("MAX98357A", 19.4, 17.8, note="Adafruit 19,4 x 17,8"),
+    # rząd 2
     Module("Buck 5 V (LM2596)", 43.0, 21.0, note="⚠️ założenie – nie sprawdzano w sieci"),
-    # wiersz C
     Module("Buck 6 V 5 A", 51.0, 23.0, note="⚠️ założenie (typ XL4015) – nie sprawdzano w sieci"),
+    Module("MAX98357A", 19.4, 17.8, note="Adafruit 19,4 x 17,8"),
+    # rząd 3
+    Module("Akumulator 2S", 80.0, 40.0, bh=8.0,
+           note="⚠️ założenie: 2 x 18650 w koszyku/pakiecie ok. 80 x 40 x 20; dla LiPo 2S 2200 mAh (ok. 105 x 35) zmień wymiary"),
+    Module("TB6612FNG", 25.4, 22.9, note="klony 24 x 21 – 25,4 x 22,9"),
 ]
 BY = {m.name: m for m in MODULES}
+ROWS = [
+    ["ESP32 DevKit 38p", "PCA9685"],
+    ["Buck 5 V (LM2596)", "Buck 6 V 5 A", "MAX98357A"],
+    ["Akumulator 2S", "TB6612FNG"],
+]
 # ESP32 stoi na kołkach w dół → szczeliny pod piny; rozstaw szczelin obejmuje 22,86 i 25,4 mm
 ESP_SLOT_C, ESP_SLOT_W, ESP_SLOT_L = 11.5, 5.0, 50.0
-BY["ESP32 DevKit 38p"].pin_slots = True
+
+
+def pw(m): return m.w + 2 * CLEAR
+def pd(m): return m.d + 2 * CLEAR
 
 
 def layout() -> tuple[float, float]:
-    """Ręczne rozmieszczenie (współrzędne lewego dolnego rogu kieszeni). Zwraca (W, D) płyty."""
-    def pw(m): return m.w + 2 * CLEAR
-    def pd(m): return m.d + 2 * CLEAR
-    esp, pca = BY["ESP32 DevKit 38p"], BY["PCA9685"]
-    amp, b5, b6 = (BY[n] for n in ("MAX98357A", "Buck 5 V (LM2596)", "Buck 6 V 5 A"))
-
+    """Rzędy modułów od dołu do góry. Zwraca (W, D) płyty."""
     y = MARGIN
-    esp.x, esp.y = MARGIN, y
-    pca.x, pca.y = esp.x + pw(esp) + GAP, y
-    rowA = max(pd(esp), pd(pca))
-
-    y = MARGIN + rowA + GAP
-    b5.x, b5.y = MARGIN, y
-    b6.x, b6.y = b5.x + pw(b5) + GAP, y
-    amp.x, amp.y = b6.x + pw(b6) + GAP, y
-
+    for row in ROWS:
+        x = MARGIN
+        for n in row:
+            m = BY[n]
+            m.x, m.y = x, y
+            x += pw(m) + GAP
+        y += max(pd(BY[n]) for n in row) + ROW_GAP
     W = max(m.x + pw(m) for m in MODULES) + MARGIN
     D = max(m.y + pd(m) for m in MODULES) + MARGIN
     return W, D
@@ -120,7 +132,7 @@ def brackets(m: Module):
     x0, y0, x1, y1 = pocket_rect(m)
     parts = []
     z0 = PLATE_T
-    top = z0 + (SHELF_H if m.shelf else 0) + BR_H
+    top = z0 + (SHELF_H if m.shelf else 0) + m.bh
     for sx, cx in ((1, x0), (-1, x1)):
         for sy, cy in ((1, y0), (-1, y1)):
             # ramię wzdłuż X i wzdłuż Y, leżą na zewnątrz kieszeni
@@ -162,8 +174,14 @@ def cutouts(m: Module):
 
 
 def hole_positions(W, D):
-    i = HOLE_INSET
-    return [(i, i), (W - i, i), (i, D - i), (W - i, D - i)]
+    """4 otwory M3 w pasach między rzędami modułów (rzędy 1|2 i 2|3), z dala od otworów na opaski."""
+    ys = []
+    y = MARGIN
+    for row in ROWS[:-1]:
+        y += max(pd(BY[n]) for n in row)
+        ys.append(y + ROW_GAP / 2)
+        y += ROW_GAP
+    return [(x, yy) for yy in ys for x in (HOLE_X[0], W - HOLE_X[1])]
 
 
 def build_plate():
@@ -239,8 +257,33 @@ def preview(W, D):
     fig.savefig(OUT / "preview.png", dpi=110, bbox_inches="tight")
 
 
+def check_layout(W, D):
+    """Kontrole geometryczne układu; zgłasza błąd zamiast po cichu generować zły plik."""
+    rects = [pocket_rect(m) for m in MODULES]
+    need = 2 * BR_T + 1.0   # kątowniki obu sąsiadów + 1 mm
+    for i, a in enumerate(rects):
+        for b in rects[i + 1:]:
+            ok = a[2] + need <= b[0] or b[2] + need <= a[0] or a[3] + need <= b[1] or b[3] + need <= a[1]
+            assert ok, "kieszenie za blisko"
+    # otwory M3 płyty: nie mogą wchodzić na kątowniki (1,6 mm poza kieszenią) ani na otwory opasek
+    r = HOLE_D / 2 + 1.0
+    for hx, hy in hole_positions(W, D):
+        for (x0, y0, x1, y1) in rects:
+            assert not (x0 - BR_T - r < hx < x1 + BR_T + r and y0 - BR_T - r < hy < y1 + BR_T + r), \
+                f"otwór M3 ({hx:.1f},{hy:.1f}) koliduje z kieszenią"
+        for m in MODULES:
+            for c in cutouts(m):
+                b = c.bounds
+                assert not (b[0][0] - r < hx < b[1][0] + r and b[0][1] - r < hy < b[1][1] + r), \
+                    f"otwór M3 ({hx:.1f},{hy:.1f}) koliduje z otworem opaski {m.name}"
+    # zmieszczenie we wnętrzu korpusu (wymiary z 3MF – patrz docs/mounting-plate.md pkt 4)
+    assert W <= INNER_W_MAX - 2 * FIT_CLEAR_W + 1e-6, f"płyta za szeroka: {W:.1f} > {INNER_W_MAX - 2 * FIT_CLEAR_W:.1f}"
+    assert D <= INNER_D_MAX + 1e-6, f"płyta za głęboka: {D:.1f} > {INNER_D_MAX}"
+
+
 def main():
     plate, W, D = build_plate()
+    check_layout(W, D)
     coupon = build_coupon()
     spacer = build_spacer()
     check("plate", plate)
@@ -249,13 +292,8 @@ def main():
     plate.export(OUT / "walle_plate.stl")
     coupon.export(OUT / "walle_fit_coupon.stl")
     spacer.export(OUT / "walle_spacer.stl")
-    # kontrola kolizji kieszeni
-    rects = [pocket_rect(m) for m in MODULES]
-    for i, a in enumerate(rects):
-        for b in rects[i + 1:]:
-            assert a[2] + 6 <= b[0] or b[2] + 6 <= a[0] or a[3] + 6 <= b[1] or b[3] + 6 <= a[1], "kieszenie za blisko"
     preview(W, D)
-    print(f"płyta {W:.1f} x {D:.1f} mm – OK")
+    print(f"płyta {W:.1f} x {D:.1f} mm (zapas w szerokości {(INNER_W_MAX - W) / 2:.1f} mm na stronę) – OK")
 
 
 if __name__ == "__main__":
