@@ -2,7 +2,7 @@
 
 Status: **projekt nieprzetestowany** – siatki STL są poprawne geometrycznie (zamknięte, wygenerowane skryptem), ale płytka **nie była drukowana** ani przymierzana do prawdziwych modułów. Najpierw wydrukuj szablon (pkt 3).
 
-**Wersja 2 (przeliczona pod model 3MF z Printables):** płyta ma 135 × 106 mm (była 157 × 84), mieści się we wnętrzu korpusu, niesie **samą elektronikę** (w tym TB6612FNG), a **akumulator leży osobno pod nią**. Wymiary wnętrza pochodzą z rozłożonych części 3MF – pkt 4.
+**Wersja 2 (przeliczona pod model 3MF z Printables):** płyta ma 135 × 110 mm (była 157 × 84), mieści się we wnętrzu korpusu, niesie **samą elektronikę** (w tym TB6612FNG), a **akumulator leży osobno pod nią**. Wymiary wnętrza pochodzą z rozłożonych części 3MF – pkt 4.
 
 Pliki: [`hardware/mounting-plate/`](../hardware/mounting-plate/) – `plate.py` (generator, jedyne źródło wymiarów), `walle_plate.stl`, `walle_fit_coupon.stl`, `walle_spacer.stl`, `preview.png`.
 
@@ -17,7 +17,7 @@ Sprawdzone wzorce z internetu (płytki pod ESP32 na Printables/MakerWorld, porad
 - Pod narożnikami płytek (poza ESP32) są półki 2,5 mm, żeby lutowania od spodu nie opierały się o płytę.
 - **ESP32** ma kołki zlutowane w dół: pod obydwoma rzędami pinów jest szczelina przelotowa (obejmuje rozstaw 22,86 i 25,4 mm). Dlatego płyta stoi na odstępnikach.
 - Cztery otwory M3 w pasach między rzędami modułów (nie w narożnikach – tam stoją kieszenie); odstępniki ≥ 12 mm (kupne M3 żeńsko-żeńskie albo `walle_spacer.stl`, 4 szt.).
-- Bez podpór: wszystkie ścianki pionowe, płyta płasko na stole. Płyta ma 135,2 × 105,7 mm i 3,5 mm grubości (do 10,5 mm z kątownikami).
+- Bez podpór: wszystkie ścianki pionowe, płyta płasko na stole. Płyta ma 135,2 × 109,7 mm i 3,5 mm grubości (do 10,5 mm z kątownikami).
 
 Rozmieszczenie (3 rzędy, `ROWS` w `plate.py`): dół – ESP32, PCA9685; środek – buck 5 V, buck 6 V, MAX98357A; góra – TB6612FNG (obok niego wolne miejsce na bezpiecznik/wyłącznik/kondensatory).
 
@@ -33,13 +33,17 @@ Numery jak na [podglądzie](../hardware/mounting-plate/preview.png). Współrzę
 |---|---|---|---|---|
 | 1 | ESP32 DevKit | x 5, y 5 – lewy dolny róg | 1 (dół) | USB skieruj ku krawędzi płyty, żeby dało się podpiąć kabel; antena bez metalu i przewodów zasilania obok. Piny w dół przez szczeliny |
 | 2 | PCA9685 | x 66, y 5 – prawy dolny | 1 | I2C z ESP32; V+ serw z buck 6 V (+1000 µF przy złączu) |
-| 3 | Buck 5 V | x 5, y 44 – lewy środek | 2 | Zasila ESP32 i MAX98357A (oraz ESP32-CAM poza płytą) |
-| 4 | Buck 6 V 5 A | x 54, y 44 – środek | 2 | Tylko serwa; blisko PCA9685 (krótkie grube przewody) |
-| 5 | MAX98357A | x 111, y 44 – prawy środek | 2 | Głośnik, I2S z ESP32 |
-| 6 | TB6612FNG | x 5, y 77 – lewa góra | 3 (góra) | Silniki gąsienic; VM wprost z baterii (+470 µF). Obok wolne miejsce na bezpiecznik 5 A, wyłącznik i kondensatory |
+| 3 | Buck 5 V | x 5, y 46 – lewy środek | 2 | Zasila ESP32 i MAX98357A (oraz ESP32-CAM poza płytą) |
+| 4 | Buck 6 V 5 A | x 54, y 46 – środek | 2 | Tylko serwa; blisko PCA9685 (krótkie grube przewody) |
+| 5 | MAX98357A | x 110, y 46 – prawy środek | 2 | Głośnik, I2S z ESP32 |
+| 6 | TB6612FNG | x 5, y 81 – lewa góra | 3 (góra) | Silniki gąsienic; VM wprost z baterii (+470 µF). Obok wolne miejsce na bezpiecznik 5 A, wyłącznik i kondensatory |
 | – | Akumulator 2S | **pod płytą**, na dnie korpusu | – | Rozmiar do ustalenia; bezpiecznik 5 A i wyłącznik w przewodzie „+” |
 
 Zasada układu: ciężki akumulator nisko, pod płytą; bucki w środku między baterią a odbiornikami, ESP32 i PCA9685 na dole z dala od zakłóceń silników. Pozycje podają wartości z `layout()` (wylicza je skrypt); jeśli zmienisz wymiary modułów, tabela się przesunie – odtwórz podgląd i popraw ją. Który bok płyty jest przodem robota, **jeszcze nie ustalono** (zależy od przymiarki w korpusie).
+
+### Napisy na płytce
+
+W `walle_plate.stl` są **wyryte** (0,8 mm, litery 3,5 mm, czcionka pogrubiona) krótkie napisy obok każdej kieszeni, numerowane jak w tabeli: `1 ESP32`, `2 SERWA`, `3 5V` (buck 5 V), `4 6V` (buck 6 V), `5 AUDIO` (MAX98357A), `6 MOTOR` (TB6612). Napis stoi nad lub pod swoją kieszenią, a `6 MOTOR` z jej prawej strony. Położenie wybiera skrypt automatycznie (omija otwory na opaski, otwory M3 i kątowniki) i przerywa z błędem, gdy nie ma miejsca. Treść napisów – słownik `LABELS` w `plate.py`. **Nie sprawdzone w druku:** 0,8 mm głębokości i 3,5 mm liter powinno być czytelne przy dyszy 0,4 mm, ale nie wydrukowałem tego. Przy płycie drukowanej do góry dnem (brim) napisy są na wierzchu – drukuj ją licem do góry.
 
 ## 2. Wymiary i piny – co sprawdzono
 

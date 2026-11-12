@@ -28,7 +28,7 @@ CLEAR = 0.3          # luz na stronę między modułem a kieszenią (FDM: 0.2–
 PLATE_T = 3.5        # grubość płyty
 MARGIN = 5.0         # odstęp modułów od krawędzi płyty
 GAP = 5.0            # odstęp między modułami w tym samym rzędzie
-ROW_GAP = 10.0       # odstęp między rzędami (opaski, przewody i otwory M3 płyty)
+ROW_GAP = 12.0       # odstęp między rzędami (opaski, przewody i otwory M3 płyty)
 BR_H = 4.5           # wysokość narożnych kątowników ponad półką
 BR_ARM = 7.0         # długość ramienia kątownika
 BR_T = 1.6           # grubość ścianki kątownika (4 ścieżki dyszy 0.4)
@@ -182,6 +182,87 @@ def cutouts(m: Module):
     return cuts
 
 
+# ───────────────────────── opisy wyryte w płycie ─────────────────────────
+LABELS = {   # krótki napis wyryty obok kieszeni (numer jak na preview.png i w docs/mounting-plate.md)
+    "ESP32 DevKit 38p": "1 ESP32",
+    "PCA9685": "2 SERWA",
+    "Buck 5 V (LM2596)": "3 5V",
+    "Buck 6 V 5 A": "4 6V",
+    "MAX98357A": "5 AUDIO",
+    "TB6612FNG": "6 MOTOR",
+}
+TEXT_H = 3.5         # wysokość liter [mm]; poniżej ok. 3 mm druk 0,4 mm jest nieczytelny
+ENGRAVE = 0.8        # głębokość ryty [mm] (4 warstwy po 0,2)
+
+
+def text_polygon(txt, height):
+    """Napis → wielokąt shapely (litery z otworami), lewy dolny róg bboxa w (0,0)."""
+    from matplotlib.font_manager import FontProperties
+    from matplotlib.textpath import TextPath
+    from shapely.geometry import Polygon
+    from shapely.ops import unary_union
+    tp = TextPath((0, 0), txt, size=height / 0.72, prop=FontProperties(family="DejaVu Sans", weight="bold"))
+    polys = [Polygon(p) for p in tp.to_polygons() if len(p) >= 3]
+    # otwory liter (O, A, 6…): kontur leżący w innym konturze odejmujemy (parzysty-nieparzysty)
+    solid = None
+    for p in sorted(polys, key=lambda q: -q.area):
+        if not p.is_valid:
+            p = p.buffer(0)
+        solid = p if solid is None else solid.symmetric_difference(p)
+    x0, y0, _, _ = solid.bounds
+    from shapely import affinity
+    return affinity.translate(solid, -x0, -y0)
+
+
+def place_labels(W, D):
+    """Dla każdego modułu wybiera wolne miejsce na napis (nad lub pod kieszenią); zwraca [(tekst, poly, x, y)]."""
+    from shapely.geometry import box as sbox
+    keep = []   # strefy zakazane
+    for m in MODULES:
+        x0, y0, x1, y1 = pocket_rect(m)
+        keep.append(sbox(x0 - BR_T - 0.6, y0 - BR_T - 0.6, x1 + BR_T + 0.6, y1 + BR_T + 0.6))
+        for c in cutouts(m):
+            b = c.bounds
+            keep.append(sbox(b[0][0] - 0.8, b[0][1] - 0.8, b[1][0] + 0.8, b[1][1] + 0.8))
+    for hx, hy in hole_positions(W, D):
+        keep.append(sbox(hx - HOLE_D / 2 - 1.2, hy - HOLE_D / 2 - 1.2, hx + HOLE_D / 2 + 1.2, hy + HOLE_D / 2 + 1.2))
+    edge = sbox(1.0, 1.0, W - 1.0, D - 1.0)
+    placed, out = [], []
+    for m in MODULES:
+        txt = LABELS[m.name]
+        poly = text_polygon(txt, TEXT_H)
+        w, h = poly.bounds[2], poly.bounds[3]
+        x0, y0, x1, y1 = pocket_rect(m)
+        found = None
+        cands = []
+        for ty in (y1 + BR_T + 1.0, y0 - BR_T - 1.0 - h):          # nad, potem pod kieszenią
+            cands += [(tx, ty) for tx in sorted(np.arange(x0 - 15, x1 - w + 15, 1.0), key=lambda t: abs(t - x0))]
+        cands.append((x1 + BR_T + 1.0, (y0 + y1) / 2 - h / 2))      # na końcu: z prawej strony kieszeni
+        for tx, ty in cands:
+            r = sbox(tx, ty, tx + w, ty + h)
+            if edge.contains(r) and not any(r.intersects(k) for k in keep + placed):
+                found = (tx, ty, r)
+                break
+        assert found, f"brak miejsca na napis '{txt}' – zwiększ ROW_GAP/MARGIN albo skróć napis"
+        placed.append(found[2].buffer(0.5))
+        out.append((txt, poly, found[0], found[1]))
+    return out
+
+
+def label_cutters(W, D):
+    import trimesh.creation as tc
+    from shapely import affinity
+    cuts = []
+    for txt, poly, x, y in place_labels(W, D):
+        p = affinity.translate(poly, x, y)
+        geoms = list(p.geoms) if hasattr(p, "geoms") else [p]
+        for g in geoms:
+            m = tc.extrude_polygon(g, height=ENGRAVE + 1.0)
+            m.apply_translation([0, 0, PLATE_T - ENGRAVE])
+            cuts.append(m)
+    return cuts
+
+
 def hole_positions(W, D):
     """4 otwory M3 w pasach między rzędami modułów (rzędy 1|2 i 2|3), z dala od otworów na opaski."""
     ys = []
@@ -201,6 +282,7 @@ def build_plate():
     for m in MODULES:
         cuts += cutouts(m)
         adds += brackets(m)
+    cuts += label_cutters(W, D)
     solid = union([plate] + adds)
     return diff(solid, cuts), W, D
 
@@ -263,6 +345,9 @@ def preview(W, D):
         for c in cutouts(m):
             b = c.bounds
             ax.add_patch(Rectangle((b[0][0], b[0][1]), b[1][0] - b[0][0], b[1][1] - b[0][1], fc="white", ec="#2b2118", lw=0.8))
+    for txt, poly, x, y in place_labels(W, D):
+        ax.text(x, y, txt, fontsize=7, color="#2b2118", weight="bold", va="bottom", ha="left",
+                bbox=dict(fc="none", ec="#2b2118", lw=0.4, pad=0.5))
     ax.set_xlim(-3, W + 3)
     ax.set_ylim(-3, D + 3)
     ax.set_aspect("equal")
