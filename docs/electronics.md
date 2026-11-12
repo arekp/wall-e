@@ -10,7 +10,7 @@
 | Mikrokontroler | ESP32 DevKit (38 pin, WROOM-32) | jedyny sterownik, brak Arduino |
 | Napęd | 2 × silnik DC z przekładnią (gąsienice) ⚠️ | 6–12 V, prąd < 1 A na silnik |
 | Sterownik silników | TB6612FNG (zamiennie L298N) | TB6612: 1,2 A ciągłe, mniejsze straty |
-| Serwa | do 9 szt. ⚠️ (szyja ×2, głowa, ramiona ×2, oczy ×2, dłonie ×2 opcjonalnie) | **MG90S micro (potwierdzone)**; 4,8–6 V, ok. 1,8 kg·cm przy 4,8 V i 2,2 kg·cm przy 6 V; prąd w ruchu ok. 0,2–0,3 A, w zatrzymaniu do ok. 0,7–0,9 A (wg typowych kart katalogowych, nie mierzone) |
+| Serwa | **7 szt.** (szyja ×2, głowa, ramiona ×2, oczy ×2); dłonie bez serw – w modelu ustawiane ręcznie | **MG90S micro (potwierdzone)**; 4,8–6 V, ok. 1,8 kg·cm przy 4,8 V i 2,2 kg·cm przy 6 V; prąd w ruchu ok. 0,2–0,3 A, w zatrzymaniu do ok. 0,7–0,9 A (wg typowych kart katalogowych, nie mierzone) |
 | Sterownik serw | PCA9685 (I²C, 16 kanałów) | odciąża ESP32, zasilanie serw osobne |
 | Wyświetlacz (opcja) | OLED SSD1306 128×64 I²C (ramka `OLED_frame_v2`) | ozdoba/status; można pominąć – status pokazuje też strona na telefonie |
 | Kamera | **ESP32-CAM (AI-Thinker, OV2640) jako osobny moduł** w głowie/oku | własny procesor, strumień MJPEG; nie zajmuje pinów głównego ESP32 |
@@ -37,7 +37,7 @@ flowchart LR
 
     BUCK5 --> ESP["ESP32 DevKit"]
     BUCK6 -->|V+| PCA["PCA9685<br/>16x PWM"]
-    PCA --> SERVA["Serwa ch0..ch8"]
+    PCA --> SERVA["Serwa ch0..ch6"]
 
     ESP -- "I2C SDA21/SCL22" --> PCA
     ESP -- "I2C" --> OLED["OLED SSD1306"]
@@ -104,8 +104,8 @@ Adresy I²C: PCA9685 = `0x40`, OLED = `0x3C`.
 | 4 | Ramię prawe | 0–120 | 0 |
 | 5 | Oko lewe | 30–150 | 90 |
 | 6 | Oko prawe | 30–150 | 90 |
-| 7 | Dłoń lewa (opcja) | 0–90 | 45 |
-| 8 | Dłoń prawa (opcja) | 0–90 | 45 |
+| 7 | *(zarezerwowany – dłoń lewa, nieużywana)* | 0–90 | 45 |
+| 8 | *(zarezerwowany – dłoń prawa, nieużywana)* | 0–90 | 45 |
 
 Zakresy trzeba skalibrować mechanicznie na gotowym modelu (ograniczenia w firmware, żeby serwo nie dobijało do oporu).
 
@@ -167,7 +167,7 @@ odtwarzane przez MAX98357A.
 | 1 | TB6612FNG (moduł) |
 | 1 | PCA9685 (moduł 16 kanałów) |
 | 1 | OLED SSD1306 128×64 I²C *(opcja)* |
-| 9 | Serwa 9 g (MG90S) – liczba do potwierdzenia |
+| 7 | Serwa 9 g (MG90S) |
 | 2 | Silniki DC z przekładnią (te, które już masz) |
 | 1 | Akumulator 2S Li-ion + ładowarka/BMS 2S |
 | 1 | Buck 5 V ≥ 3 A (logika, ESP32-CAM) |
