@@ -23,6 +23,22 @@ Rozmieszczenie (3 rzędy, `ROWS` w `plate.py`): dół – ESP32, PCA9685; środe
 
 **Poza płytką:** ESP32-CAM (osobny moduł w głowie/korpusie, ma tylko zasilanie i masę). Bezpiecznik, wyłącznik i kondensatory nie mają kieszeni – lutuj je w przewodzie przy modułach.
 
+## 1a. Co gdzie leży
+
+Numery jak na [podglądzie](../hardware/mounting-plate/preview.png). Współrzędne: lewy dolny róg kieszeni, od lewego dolnego rogu płyty, widok z góry [mm]. Piny i zasilanie – wg [`electronics.md`](electronics.md).
+
+| Nr | Element | Pozycja na płycie | Rząd | Co podłączyć / uwagi |
+|---|---|---|---|---|
+| 1 | ESP32 DevKit | x 5, y 5 – lewy dolny róg | 1 (dół) | USB skieruj ku krawędzi płyty, żeby dało się podpiąć kabel; antena bez metalu i przewodów zasilania obok. Piny w dół przez szczeliny |
+| 2 | PCA9685 | x 66, y 5 – prawy dolny | 1 | I2C z ESP32; V+ serw z buck 6 V (+1000 µF przy złączu) |
+| 3 | Buck 5 V | x 5, y 44 – lewy środek | 2 | Zasila ESP32 i MAX98357A (oraz ESP32-CAM poza płytą) |
+| 4 | Buck 6 V 5 A | x 54, y 44 – środek | 2 | Tylko serwa; blisko PCA9685 (krótkie grube przewody) |
+| 5 | MAX98357A | x 111, y 44 – prawy środek | 2 | Głośnik, I2S z ESP32 |
+| 6 | Akumulator 2S | x 5, y 77 – lewa góra | 3 (góra) | Opaska zaciskowa; bezpiecznik 5 A i wyłącznik w przewodzie „+” |
+| 7 | TB6612FNG | x 91, y 77 – prawa góra | 3 | Silniki gąsienic; VM wprost z baterii (+470 µF), krótkie przewody do akumulatora |
+
+Zasada układu: ciężki akumulator na płycie i blisko silnikowego TB6612, bucki w środku między baterią a odbiornikami, ESP32 i PCA9685 na dole z dala od zakłóceń silników. Pozycje podają wartości z `layout()` (wylicza je skrypt); jeśli zmienisz wymiary modułów, tabela się przesunie – odtwórz podgląd i popraw ją. Który bok płyty jest przodem robota, **jeszcze nie ustalono** (zależy od przymiarki w korpusie).
+
 ## 2. Wymiary i piny – co sprawdzono
 
 Strony producentów (Adafruit, SparkFun, Espressif) były w tej sesji **niedostępne** (host poza dozwoloną siecią), więc wymiary pochodzą z wyników wyszukiwania i ofert sklepów. Rysunków mechanicznych nie widziałem.

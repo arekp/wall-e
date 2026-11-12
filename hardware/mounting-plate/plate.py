@@ -46,6 +46,18 @@ INNER_D_MAX = 123.6   # pewny obszar dna (obrys 136 x 123,6 mm na spodzie body-b
 FIT_CLEAR_W = 3.0     # wymagany zapas na stronę w szerokości
 
 
+# Opis dla człowieka: co to jest i co do niego podłączyć (piny wg docs/electronics.md)
+ROLE = {
+    "ESP32 DevKit 38p": "1|ESP32: mózg. USB od krawędzi płyty (programowanie), antena bez metalu obok",
+    "PCA9685": "2|PCA9685: serwa (V+ z buck 6 V + 1000 µF), I2C do ESP32",
+    "Buck 5 V (LM2596)": "3|Buck 5 V: ESP32, MAX98357A (+ ESP32-CAM). Wejście z baterii",
+    "Buck 6 V 5 A": "4|Buck 6 V: tylko serwa (V+ PCA9685). Wejście z baterii",
+    "MAX98357A": "5|MAX98357A: głośnik, I2S z ESP32, 5 V z buck 5 V",
+    "Akumulator 2S": "6|Akumulator 2S: bezpiecznik 5 A + wyłącznik w przewodzie +",
+    "TB6612FNG": "7|TB6612: silniki gąsienic, VM wprost z baterii (+470 µF)",
+}
+
+
 @dataclass
 class Module:
     name: str
@@ -237,16 +249,20 @@ def preview(W, D):
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle, Circle
 
-    fig, ax = plt.subplots(figsize=(11, 11 * D / W + 0.6))
+    fig = plt.figure(figsize=(15, 8.5))
+    ax = fig.add_axes([0.03, 0.06, 0.52, 0.86])
     ax.add_patch(Rectangle((0, 0), W, D, fc="#f1e3cf", ec="#2b2118", lw=2))
     for x, y in hole_positions(W, D):
         ax.add_patch(Circle((x, y), HOLE_D / 2, fc="white", ec="#2b2118"))
-        ax.annotate("M3", (x, y), (x + 4, y + 4), fontsize=7)
+        ax.annotate("M3", (x, y), (x + 3, y + 3), fontsize=7)
+    legend = []
     for m in MODULES:
         x0, y0, x1, y1 = pocket_rect(m)
+        num, text = ROLE[m.name].split("|", 1)
         ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="#ffe29a", ec="#9a4f12", lw=1.5))
         cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-        ax.text(cx, cy, f"{m.name}\n{m.w:g} x {m.d:g}", ha="center", va="center", fontsize=8)
+        ax.text(cx, cy, f"{num}\n{m.name}\n{m.w:g} x {m.d:g}", ha="center", va="center", fontsize=8)
+        legend.append((num, text))
         for c in cutouts(m):
             b = c.bounds
             ax.add_patch(Rectangle((b[0][0], b[0][1]), b[1][0] - b[0][0], b[1][1] - b[0][1], fc="white", ec="#2b2118", lw=0.8))
@@ -254,7 +270,15 @@ def preview(W, D):
     ax.set_ylim(-3, D + 3)
     ax.set_aspect("equal")
     ax.set_title(f"Płytka montażowa Wall-E – {W:.0f} x {D:.0f} mm (widok z góry; białe = otwory przelotowe)")
-    fig.savefig(OUT / "preview.png", dpi=110, bbox_inches="tight")
+    ax.set_xlabel("X [mm]  –  boki wzdłuż X to dłuższy bok płyty")
+    fig.text(0.58, 0.9, "Co gdzie leży", fontsize=14, weight="bold")
+    for i, (num, text) in enumerate(sorted(legend)):
+        fig.text(0.58, 0.84 - i * 0.085, f"{num}.  {text}", fontsize=9.5, wrap=True, va="top")
+    fig.text(0.58, 0.84 - len(legend) * 0.085 - 0.02,
+             "Zasilanie: bateria → bezpiecznik → wyłącznik → bucki i TB6612.\n"
+             "Masy wszystkich modułów połączone razem (wspólna masa).\n"
+             "Przewody wychodzą od spodu przez otwory na opaski.", fontsize=9, va="top", style="italic")
+    fig.savefig(OUT / "preview.png", dpi=110)
 
 
 def check_layout(W, D):
