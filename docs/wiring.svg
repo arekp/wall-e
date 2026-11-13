@@ -41,7 +41,7 @@
 <polyline points="720,680 820,680" fill="none" stroke="#6a1b9a" stroke-width="2.5" stroke-linejoin="round"/>
 <text x="728" y="676" font-size="12" fill="#6a1b9a" text-anchor="start">DIN</text>
 <rect x="820" y="240" width="240" height="540" rx="8" fill="#e8f0fe" stroke="#1a237e" stroke-width="2"/>
-<text x="940.0" y="264" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">ESP32 DevKit (38 pin)</text>
+<text x="940.0" y="264" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">ESP32 NodeMCU v3</text>
 <text x="940.0" y="284" text-anchor="middle" font-size="12.5" fill="#37474f">Wi-Fi AP „WALLE”</text>
 <text x="940.0" y="301" text-anchor="middle" font-size="12.5" fill="#37474f">192.168.4.1</text>
 <text x="940.0" y="318" text-anchor="middle" font-size="12.5" fill="#37474f">WebSocket + serwer WWW</text>
@@ -51,7 +51,7 @@
 <text x="828" y="656" font-size="12" fill="#6a1b9a" text-anchor="start">GPIO19</text>
 <text x="828" y="676" font-size="12" fill="#6a1b9a" text-anchor="start">GPIO23</text>
 <rect x="1250" y="790" width="230" height="90" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
-<text x="1365.0" y="814" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Buck 6 V / 5 A</text>
+<text x="1365.0" y="814" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Zasilacz serw 6 V (40×64)</text>
 <text x="1365.0" y="834" text-anchor="middle" font-size="12.5" fill="#37474f">IN 7,4 V → OUT 6 V (serwa)</text>
 <polyline points="450,850 1250,850" fill="none" stroke="#d32f2f" stroke-width="3" stroke-linejoin="round"/>
 <circle cx="450" cy="850" r="5" fill="#d32f2f"/>
@@ -59,29 +59,26 @@
 <polyline points="1350,790 1350,720" fill="none" stroke="#a67c00" stroke-width="4" stroke-linejoin="round"/>
 <text x="1360" y="760" font-size="12" fill="#a67c00" text-anchor="start" font-weight="700">6 V → V+</text>
 <rect x="1250" y="250" width="230" height="180" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
-<text x="1365.0" y="274" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">TB6612FNG</text>
+<text x="1365.0" y="274" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">L298N</text>
 <text x="1365.0" y="294" text-anchor="middle" font-size="12.5" fill="#37474f">sterownik silników</text>
 <polyline points="1060,280 1250,280" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
 <text x="1068" y="276" font-size="12" fill="#2e7d32" text-anchor="start">GPIO25</text>
-<text x="1242" y="276" font-size="12" fill="#2e7d32" text-anchor="end">PWMA</text>
+<text x="1242" y="276" font-size="12" fill="#2e7d32" text-anchor="end">ENA</text>
 <polyline points="1060,300 1250,300" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
 <text x="1068" y="296" font-size="12" fill="#2e7d32" text-anchor="start">GPIO26</text>
-<text x="1242" y="296" font-size="12" fill="#2e7d32" text-anchor="end">AIN1</text>
+<text x="1242" y="296" font-size="12" fill="#2e7d32" text-anchor="end">IN1</text>
 <polyline points="1060,320 1250,320" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
 <text x="1068" y="316" font-size="12" fill="#2e7d32" text-anchor="start">GPIO27</text>
-<text x="1242" y="316" font-size="12" fill="#2e7d32" text-anchor="end">AIN2</text>
+<text x="1242" y="316" font-size="12" fill="#2e7d32" text-anchor="end">IN2</text>
 <polyline points="1060,340 1250,340" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
 <text x="1068" y="336" font-size="12" fill="#2e7d32" text-anchor="start">GPIO32</text>
-<text x="1242" y="336" font-size="12" fill="#2e7d32" text-anchor="end">PWMB</text>
+<text x="1242" y="336" font-size="12" fill="#2e7d32" text-anchor="end">ENB</text>
 <polyline points="1060,360 1250,360" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
 <text x="1068" y="356" font-size="12" fill="#2e7d32" text-anchor="start">GPIO33</text>
-<text x="1242" y="356" font-size="12" fill="#2e7d32" text-anchor="end">BIN1</text>
+<text x="1242" y="356" font-size="12" fill="#2e7d32" text-anchor="end">IN3</text>
 <polyline points="1060,380 1250,380" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
 <text x="1068" y="376" font-size="12" fill="#2e7d32" text-anchor="start">GPIO14</text>
-<text x="1242" y="376" font-size="12" fill="#2e7d32" text-anchor="end">BIN2</text>
-<polyline points="1060,400 1250,400" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linejoin="round"/>
-<text x="1068" y="396" font-size="12" fill="#2e7d32" text-anchor="start">GPIO13</text>
-<text x="1242" y="396" font-size="12" fill="#2e7d32" text-anchor="end">STBY</text>
+<text x="1242" y="376" font-size="12" fill="#2e7d32" text-anchor="end">IN4</text>
 <polyline points="450,215 1190,215 1190,265 1250,265" fill="none" stroke="#d32f2f" stroke-width="3" stroke-linejoin="round"/>
 <text x="1195" y="260" font-size="12" fill="#d32f2f" text-anchor="start"></text>
 <text x="1196" y="240" font-size="12" fill="#d32f2f" text-anchor="start" font-weight="700">VM 7,4 V</text>
@@ -116,16 +113,15 @@
 <polyline points="1480,295 1560,295" fill="none" stroke="#212121" stroke-width="2.5" stroke-linejoin="round"/>
 <polyline points="1480,365 1560,365" fill="none" stroke="#212121" stroke-width="2.5" stroke-linejoin="round"/>
 <polyline points="1480,385 1560,385" fill="none" stroke="#212121" stroke-width="2.5" stroke-linejoin="round"/>
-<text x="1488" y="271" font-size="12" fill="#263238" text-anchor="start">AO1/AO2</text>
-<text x="1488" y="361" font-size="12" fill="#263238" text-anchor="start">BO1/BO2</text>
+<text x="1488" y="271" font-size="12" fill="#263238" text-anchor="start">OUT1/OUT2</text>
+<text x="1488" y="361" font-size="12" fill="#263238" text-anchor="start">OUT3/OUT4</text>
 <rect x="1560" y="540" width="200" height="200" rx="8" fill="#f5f7fa" stroke="#37474f" stroke-width="2"/>
-<text x="1660.0" y="564" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Serwa (ch0–ch8)</text>
+<text x="1660.0" y="564" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a1a">Serwa (ch0–ch6)</text>
 <text x="1660.0" y="584" text-anchor="middle" font-size="12.5" fill="#37474f">0 szyja dolna</text>
 <text x="1660.0" y="601" text-anchor="middle" font-size="12.5" fill="#37474f">1 szyja górna</text>
 <text x="1660.0" y="618" text-anchor="middle" font-size="12.5" fill="#37474f">2 obrót głowy</text>
 <text x="1660.0" y="635" text-anchor="middle" font-size="12.5" fill="#37474f">3 ramię L · 4 ramię R</text>
 <text x="1660.0" y="652" text-anchor="middle" font-size="12.5" fill="#37474f">5 oko L · 6 oko R</text>
-<text x="1660.0" y="669" text-anchor="middle" font-size="12.5" fill="#37474f">7 dłoń L · 8 dłoń R (opc.)</text>
 <text x="1660.0" y="686" text-anchor="middle" font-size="12.5" fill="#37474f">każde: sygnał + 6 V + GND</text>
 <polyline points="1480,640 1560,640" fill="none" stroke="#a67c00" stroke-width="5" stroke-linejoin="round"/>
 <text x="1520" y="630" font-size="11.5" fill="#a67c00" text-anchor="middle">PWM + 6 V</text>
@@ -161,5 +157,5 @@
 <text x="961.0" y="930" font-size="13" fill="#263238" text-anchor="start">analog</text>
 <line x1="1028.0" y1="925" x2="1062.0" y2="925" stroke="#00838f" stroke-width="4" stroke-dasharray="8 6"/>
 <text x="1070.0" y="930" font-size="13" fill="#263238" text-anchor="start">Wi-Fi</text>
-<text x="40" y="955" font-size="12" fill="#455a64" text-anchor="start">Kondensatory: 1000 µF przy V+ PCA9685 · 470 µF przy VM TB6612FNG · 470 µF przy 5 V ESP32-CAM.  Piny GPIO0/2/12/15 (rozruchowe) i 6–11 (flash) nieużywane.</text>
+<text x="40" y="955" font-size="12" fill="#455a64" text-anchor="start">Kondensatory: 1000 µF przy V+ PCA9685 · 470 µF przy VM L298N (zworka 5V-EN zdjęta) · 470 µF przy 5 V ESP32-CAM.  Piny GPIO0/2/12/15 (rozruchowe) i 6–11 (flash) nieużywane.</text>
 </svg>

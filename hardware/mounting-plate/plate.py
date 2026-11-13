@@ -26,18 +26,14 @@ OUT = Path(__file__).parent
 # ───────────────────────── parametry druku ─────────────────────────
 CLEAR = 0.3          # luz na stronę między modułem a kieszenią (FDM: 0.2–0.4)
 PLATE_T = 3.5        # grubość płyty
-MARGIN = 5.0         # odstęp modułów od krawędzi płyty (góra/dół – tam są otwory opasek)
-MARGIN_X = 2.5       # odstęp od lewej/prawej krawędzi (opaski idą w poprzek Y, więc może być mały)
-GAP = 5.0            # odstęp między modułami w tym samym rzędzie
-ROW_GAP = 10.0       # odstęp między rzędami (opaski, przewody i otwory M3 płyty)
 BR_H = 4.5           # wysokość narożnych kątowników ponad półką
 BR_ARM = 7.0         # długość ramienia kątownika
 BR_T = 1.6           # grubość ścianki kątownika (4 ścieżki dyszy 0.4)
 SHELF_H = 2.5        # wysokość półki pod narożnikami (luz na lutowania od spodu modułu)
 SHELF = 3.5          # wielkość półki
+EDGE_X, EDGE_Y = 1.2, 1.8     # odstęp kieszeni od krawędzi płyty (prawej / górnej); daje zapas ok. 0,8 mm do limitu
 TIE_W, TIE_H = 4.4, 2.0   # otwór na opaskę zaciskową 2,5–3,6 mm
 HOLE_D = 3.4         # otwory M3 płyty (w pasach między rzędami modułów)
-HOLE_X = (12.0, 8.0)  # odległość otworów od lewej / prawej krawędzi płyty
 SPACER_H, SPACER_OD = 12.0, 8.0   # min. 12 (piny ESP32 ok. 8,5 mm + płyta). POD płytą leży akumulator: wysokość odstępnika = wys. akumulatora + 3 mm zapasu, gdy > 12
 
 # Maksymalny rozmiar płyty – ZMIERZONY przez użytkownika we wnętrzu zbudowanego korpusu (wcześniejsze
@@ -48,12 +44,12 @@ PLATE_MAX_D = 110.0
 
 # Opis dla człowieka: co to jest i co do niego podłączyć (piny wg docs/electronics.md)
 ROLE = {
-    "ESP32 DevKit 38p": "1|ESP32: mózg. USB od krawędzi płyty (programowanie), antena bez metalu obok",
-    "PCA9685": "2|PCA9685: serwa (V+ z buck 6 V + 1000 µF), I2C do ESP32",
+    "ESP32 NodeMCU v3": "1|ESP32 NodeMCU: mózg. USB ku krawędzi płyty (programowanie), antena bez metalu obok",
+    "PCA9685": "2|PCA9685: serwa (V+ z zasilacza 6 V + 1000 µF), I2C do ESP32",
     "Buck 5 V (LM2596)": "3|Buck 5 V: ESP32, MAX98357A (+ ESP32-CAM). Wejście z baterii",
-    "Buck 6 V 5 A": "4|Buck 6 V: tylko serwa (V+ PCA9685). Wejście z baterii",
+    "Zasilacz serw 6 V": "4|Zasilacz 6 V (40 x 64): tylko serwa (V+ PCA9685). Wejście z baterii, ustaw 6,0 V",
     "MAX98357A": "5|MAX98357A: głośnik, I2S z ESP32, 5 V z buck 5 V",
-    "TB6612FNG": "6|TB6612: silniki gąsienic, VM wprost z baterii (+470 µF)",
+    "L298N": "6|L298N: silniki gąsienic, VM wprost z baterii (+470 µF), ENA/ENB = PWM",
 }
 
 
@@ -72,25 +68,29 @@ class Module:
 
 # Wymiary modułu (PCB, bez luzu). ŹRÓDŁA i pewność: docs/mounting-plate.md
 MODULES = [
-    # rząd 1
-    Module("ESP32 DevKit 38p", 55.0, 28.0, shelf=False, pin_slots=True,
-           note="klony 51–55 x 25–28; rozstaw rzędów 22,86 lub 25,4"),
+    # w = wymiar wzdłuż X, d = wzdłuż Y w położeniu NA PŁYCIE (obrót modułu = zamiana w/d).
+    Module("ESP32 NodeMCU v3", 31.6, 58.2, shelf=False, pin_slots=True,
+           note="zmierzone: 31,6 x 58,2; rozstaw rzędów pinów ⚠️ niezmierzony (szczeliny obejmują 22–30 mm)"),
     Module("PCA9685", 62.5, 25.4, note="jedno źródło; inne oferty 60 x 25"),
-    # rząd 2
     Module("Buck 5 V (LM2596)", 43.0, 21.0, note="⚠️ założenie – nie sprawdzano w sieci"),
-    Module("Buck 6 V 5 A", 51.0, 23.0, note="⚠️ założenie (typ XL4015) – nie sprawdzano w sieci"),
+    Module("Zasilacz serw 6 V", 64.0, 40.0, note="zmierzone: 40 x 64 (moduł zasilający zastępujący buck 6 V), obrócony: 64 wzdłuż X"),
     Module("MAX98357A", 19.4, 17.8, note="Adafruit 19,4 x 17,8"),
-    # rząd 3
-    Module("TB6612FNG", 25.4, 22.9, note="klony 24 x 21 – 25,4 x 22,9"),
+    Module("L298N", 43.7, 43.7, note="zmierzone: 43,7 x 43,7 (sterownik silników, zastępuje TB6612FNG); radiator ok. 25–30 mm wys."),
 ]
 BY = {m.name: m for m in MODULES}
-ROWS = [
-    ["ESP32 DevKit 38p", "Buck 5 V (LM2596)"],   # logika (5 V)
-    ["PCA9685", "Buck 6 V 5 A"],                 # serwa (6 V)
-    ["TB6612FNG", "MAX98357A"],                  # silniki i audio; z prawej wolne miejsce na bezpiecznik/wyłącznik/napisy
-]
+# Położenie lewego dolnego rogu kieszeni [mm]. Układ znaleziony wyszukiwaniem (obroty modułów dozwolone,
+# kątowniki sąsiadów mogą się stykać, otwory opasek nie wchodzą na cudze kątowniki); grupy: PCA9685 tuż nad
+# zasilaczem serw, ESP32 obok MAX98357A, L298N przy dolnej krawędzi (stąd idą przewody od akumulatora).
+POS = {
+    "Zasilacz serw 6 V": (2.0, 5.5),
+    "L298N": (69.0, 1.5),
+    "PCA9685": (2.0, 48.5),
+    "ESP32 NodeMCU v3": (68.0, 48.5),
+    "MAX98357A": (103.0, 48.5),
+    "Buck 5 V (LM2596)": (2.0, 76.5),
+}
 # ESP32 stoi na kołkach w dół → szczeliny pod piny; rozstaw szczelin obejmuje 22,86 i 25,4 mm
-ESP_SLOT_C, ESP_SLOT_W, ESP_SLOT_L = 11.5, 5.0, 50.0
+ESP_SLOT_C, ESP_SLOT_W, ESP_SLOT_L = 12.0, 6.0, 50.0   # rzędy pinów w odległości 18–30 mm (22,86 / 25,4 / 27,94)
 
 
 def pw(m): return m.w + 2 * CLEAR
@@ -98,22 +98,11 @@ def pd(m): return m.d + 2 * CLEAR
 
 
 def layout() -> tuple[float, float]:
-    """Rzędy modułów od dołu do góry. Zwraca (W, D) płyty.
-    Szerokość wyznacza najszerszy rząd; pozostałe rzędy są rozsunięte na całą szerokość (moduły przy
-    krawędziach, wolne miejsce w środku – na napisy, bezpiecznik, wyłącznik, kondensatory)."""
-    row_w = [sum(pw(BY[n]) for n in row) + GAP * (len(row) - 1) for row in ROWS]
-    inner_w = max(row_w)
-    W = inner_w + 2 * MARGIN_X
-    y = MARGIN
-    for row, rw in zip(ROWS, row_w):
-        gap = GAP + (inner_w - rw) / (len(row) - 1) if len(row) > 1 else GAP
-        x = MARGIN_X
-        for n in row:
-            m = BY[n]
-            m.x, m.y = x, y
-            x += pw(m) + gap
-        y += max(pd(BY[n]) for n in row) + ROW_GAP
-    D = max(m.y + pd(m) for m in MODULES) + MARGIN
+    """Ustawia kieszenie wg POS. Zwraca (W, D) płyty."""
+    for n, (x, y) in POS.items():
+        BY[n].x, BY[n].y = x, y
+    W = max(m.x + pw(m) for m in MODULES) + EDGE_X
+    D = max(m.y + pd(m) for m in MODULES) + EDGE_Y
     return W, D
 
 
@@ -171,9 +160,14 @@ def cutouts(m: Module):
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
     cuts = []
     if m.pin_slots:
+        along_x = (x1 - x0) >= (y1 - y0)      # rzędy pinów biegną wzdłuż dłuższego boku modułu
         for s in (-1, 1):
-            cuts.append(box(cx - ESP_SLOT_L / 2, cy + s * ESP_SLOT_C - ESP_SLOT_W / 2, -1,
-                            cx + ESP_SLOT_L / 2, cy + s * ESP_SLOT_C + ESP_SLOT_W / 2, PLATE_T + 1))
+            if along_x:
+                cuts.append(box(cx - ESP_SLOT_L / 2, cy + s * ESP_SLOT_C - ESP_SLOT_W / 2, -1,
+                                cx + ESP_SLOT_L / 2, cy + s * ESP_SLOT_C + ESP_SLOT_W / 2, PLATE_T + 1))
+            else:
+                cuts.append(box(cx + s * ESP_SLOT_C - ESP_SLOT_W / 2, cy - ESP_SLOT_L / 2, -1,
+                                cx + s * ESP_SLOT_C + ESP_SLOT_W / 2, cy + ESP_SLOT_L / 2, PLATE_T + 1))
     # opaski prowadzimy w poprzek krótszego wymiaru, otwory leżą poza krawędziami modułu
     short_is_y = (y1 - y0) <= (x1 - x0)
     off = 3.5
@@ -189,12 +183,12 @@ def cutouts(m: Module):
 
 # ───────────────────────── opisy wyryte w płycie ─────────────────────────
 LABELS = {   # krótki napis wyryty obok kieszeni (numer jak na preview.png i w docs/mounting-plate.md)
-    "ESP32 DevKit 38p": "1 ESP32",
+    "ESP32 NodeMCU v3": "1 ESP32",
     "PCA9685": "2 SERWA",
     "Buck 5 V (LM2596)": "3 5V",
-    "Buck 6 V 5 A": "4 6V",
-    "MAX98357A": "5 AUDIO",
-    "TB6612FNG": "6 MOTOR",
+    "Zasilacz serw 6 V": "4 6V",
+    "MAX98357A": "5 AMP",
+    "L298N": "6 MOTOR",
 }
 TEXT_H = 3.5         # wysokość liter [mm]; poniżej ok. 3 mm druk 0,4 mm jest nieczytelny
 ENGRAVE = 0.8        # głębokość ryty [mm] (4 warstwy po 0,2)
@@ -256,7 +250,26 @@ def place_labels(W, D):
             if edge.contains(r) and not any(r.intersects(k) for k in keep + placed):
                 found = (tx, ty, r)
                 break
-        assert found, f"brak miejsca na napis '{txt}' – zwiększ ROW_GAP/MARGIN albo skróć napis"
+        if not found:
+            # brak wolnego miejsca na zewnątrz → napis wewnątrz kieszeni (na dnie, pod modułem; widoczny przed
+            # włożeniem modułu). Omija szczeliny, kątowniki/półki w narożnikach i inne napisy.
+            cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+            inner = sbox(x0 + 0.8, y0 + 0.8, x1 - 0.8, y1 - 0.8)
+            own_cuts = [sbox(c.bounds[0][0] - 0.8, c.bounds[0][1] - 0.8, c.bounds[1][0] + 0.8, c.bounds[1][1] + 0.8)
+                        for c in cutouts(m)]
+            if m.shelf:   # półki w narożnikach kieszeni
+                own_cuts += [sbox(px - SHELF * (1 if px == x0 else 0), py - SHELF * (1 if py == y0 else 0),
+                                  px + SHELF * (1 if px == x1 else 0) + (SHELF if px == x0 else 0) * 0,
+                                  py + SHELF * (1 if py == y1 else 0)) for px in (x0, x1) for py in (y0, y1)]
+            spots = sorted(((tx - w / 2 - cx) ** 2 + (ty - h / 2 - cy) ** 2, tx - w / 2, ty - h / 2)
+                           for tx in np.arange(x0 + 0.8 + w / 2, x1 - 0.8 - w / 2 + 0.01, 0.5)
+                           for ty in np.arange(y0 + 0.8 + h / 2, y1 - 0.8 - h / 2 + 0.01, 0.5))
+            for _, tx, ty in spots:
+                r = sbox(tx, ty, tx + w, ty + h)
+                if inner.contains(r) and not any(r.intersects(k) for k in own_cuts + placed):
+                    found = (tx, ty, r)
+                    break
+        assert found, f"brak miejsca na napis '{txt}' – skróć napis albo przesuń moduły (POS)"
         placed.append(found[2].buffer(0.5))
         out.append((txt, poly, found[0], found[1]))
     return out
@@ -277,11 +290,12 @@ def label_cutters(W, D):
 
 
 def hole_positions(W, D):
-    """4 otwory M3 w pasach między rzędami: w każdym pasie jeden przy lewej i jeden przy prawej krawędzi,
-    w pierwszym wolnym miejscu (omijają otwory opasek i kątowniki)."""
+    """4 otwory M3 w wolnych miejscach, możliwie daleko od siebie (najdalszy punkt od środka, potem
+    kolejne najdalsze od wybranych). Omijają kieszenie, kątowniki i otwory opasek."""
     r = HOLE_D / 2 + 1.0
     rects = [pocket_rect(m) for m in MODULES]
     cuts = [c.bounds for m in MODULES for c in cutouts(m)]
+    m_edge = 4.0
 
     def free(hx, hy):
         for (x0, y0, x1, y1) in rects:
@@ -292,18 +306,15 @@ def hole_positions(W, D):
                 return False
         return True
 
-    ys, y = [], MARGIN
-    for row in ROWS[:-1]:
-        y += max(pd(BY[n]) for n in row)
-        ys.append(y + ROW_GAP / 2)
-        y += ROW_GAP
-    out = []
-    for yy in ys:
-        for side, start in ((1, HOLE_X), (-1, HOLE_X)):
-            xs = [HOLE_X[0] + i * 0.5 for i in range(0, 120)] if side == 1 else [W - HOLE_X[1] - i * 0.5 for i in range(0, 120)]
-            x = next((x for x in xs if free(x, yy)), None)
-            assert x is not None, f"brak miejsca na otwór M3 w pasie y={yy:.1f}"
-            out.append((x, yy))
+    pts = [(x, y) for x in np.arange(m_edge, W - m_edge + 0.01, 0.5) for y in np.arange(m_edge, D - m_edge + 0.01, 0.5)
+           if free(x, y)]
+    assert pts, "brak wolnego miejsca na otwory M3"
+    arr = np.array(pts)
+    chosen = [int(np.argmax(np.hypot(arr[:, 0] - W / 2, arr[:, 1] - D / 2)))]   # najdalszy od środka płyty
+    while len(chosen) < 4:                       # kolejne: najdalsze od już wybranych (równomierny rozstaw)
+        dmin = np.min([np.hypot(arr[:, 0] - arr[i, 0], arr[:, 1] - arr[i, 1]) for i in chosen], axis=0)
+        chosen.append(int(np.argmax(dmin)))
+    out = [(float(arr[i, 0]), float(arr[i, 1])) for i in chosen]
     return out
 
 
@@ -373,14 +384,18 @@ def preview(W, D):
         num, text = ROLE[m.name].split("|", 1)
         ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="#ffe29a", ec="#9a4f12", lw=1.5))
         cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-        ax.text(cx, cy, f"{num}\n{m.name}\n{m.w:g} x {m.d:g}", ha="center", va="center", fontsize=8)
+        ax.text(cx, y1 - 1.5, f"{num}  {m.name}\n{m.w:g} x {m.d:g}", ha="center", va="top", fontsize=8)
         legend.append((num, text))
         for c in cutouts(m):
             b = c.bounds
             ax.add_patch(Rectangle((b[0][0], b[0][1]), b[1][0] - b[0][0], b[1][1] - b[0][1], fc="white", ec="#2b2118", lw=0.8))
-    for txt, poly, x, y in place_labels(W, D):
-        ax.text(x, y, txt, fontsize=7, color="#2b2118", weight="bold", va="bottom", ha="left",
-                bbox=dict(fc="none", ec="#2b2118", lw=0.4, pad=0.5))
+    from shapely import affinity
+    for txt, poly, x, y in place_labels(W, D):   # dokładnie to, co jest wyryte w STL
+        p = affinity.translate(poly, x, y)
+        for g in (list(p.geoms) if hasattr(p, "geoms") else [p]):
+            ax.fill(*g.exterior.xy, fc="#2b2118", ec="none")
+            for hole in g.interiors:
+                ax.fill(*hole.xy, fc="#ffe29a", ec="none")
     ax.set_xlim(-3, W + 3)
     ax.set_ylim(-3, D + 3)
     ax.set_aspect("equal")
@@ -391,7 +406,7 @@ def preview(W, D):
         fig.text(0.58, 0.84 - i * 0.085, f"{num}.  {text}", fontsize=9.5, wrap=True, va="top")
     fig.text(0.58, 0.84 - len(legend) * 0.085 - 0.02,
              "Akumulator NIE jest na płytce – leży pod nią (rozmiar do ustalenia).\n"
-             "Zasilanie: bateria → bezpiecznik → wyłącznik → bucki i TB6612.\n"
+             "Zasilanie: bateria → bezpiecznik → wyłącznik → bucki i L298N.\n"
              "Masy wszystkich modułów połączone razem (wspólna masa).\n"
              "Przewody wychodzą od spodu przez otwory na opaski.", fontsize=9, va="top", style="italic")
     fig.savefig(OUT / "preview.png", dpi=110)
@@ -400,10 +415,11 @@ def preview(W, D):
 def check_layout(W, D):
     """Kontrole geometryczne układu; zgłasza błąd zamiast po cichu generować zły plik."""
     rects = [pocket_rect(m) for m in MODULES]
-    need = 2 * BR_T + 1.0   # kątowniki obu sąsiadów + 1 mm
+    need = BR_T + 0.4       # kątownik jednego modułu nie może wejść w kieszeń sąsiada (kątowniki sąsiadów mogą się stykać)
     for i, a in enumerate(rects):
         for b in rects[i + 1:]:
-            ok = a[2] + need <= b[0] or b[2] + need <= a[0] or a[3] + need <= b[1] or b[3] + need <= a[1]
+            e = 1e-6
+            ok = a[2] + need <= b[0] + e or b[2] + need <= a[0] + e or a[3] + need <= b[1] + e or b[3] + need <= a[1] + e
             assert ok, "kieszenie za blisko"
     # otwory M3 płyty: nie mogą wchodzić na kątowniki (1,6 mm poza kieszenią) ani na otwory opasek
     r = HOLE_D / 2 + 1.0
@@ -416,6 +432,10 @@ def check_layout(W, D):
                 b = c.bounds
                 assert not (b[0][0] - r < hx < b[1][0] + r and b[0][1] - r < hy < b[1][1] + r), \
                     f"otwór M3 ({hx:.1f},{hy:.1f}) koliduje z otworem opaski {m.name}"
+    for m in MODULES:   # otwory przelotowe nie mogą dochodzić do krawędzi płyty
+        for c in cutouts(m):
+            b = c.bounds
+            assert b[0][0] >= 0.8 and b[0][1] >= 0.8 and b[1][0] <= W - 0.8 and b[1][1] <= D - 0.8, f"otwór {m.name} przy krawędzi"
     # zmieszczenie we wnętrzu korpusu (wymiary z 3MF – patrz docs/mounting-plate.md pkt 4)
     assert W <= PLATE_MAX_W + 1e-6, f"płyta za szeroka: {W:.1f} > {PLATE_MAX_W}"
     assert D <= PLATE_MAX_D + 1e-6, f"płyta za głęboka: {D:.1f} > {PLATE_MAX_D}"

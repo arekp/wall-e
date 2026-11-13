@@ -7,15 +7,15 @@
 
 | Element | Założenie | Uwagi |
 |---|---|---|
-| Mikrokontroler | ESP32 DevKit (38 pin, WROOM-32) | jedyny sterownik, brak Arduino |
+| Mikrokontroler | **ESP32 NodeMCU v3** (płytka 31,6 × 58,2 mm – zmierzone) | jedyny sterownik, brak Arduino. Numeracja GPIO z rozdz. 4 zakłada standardowy układ ESP32 DevKit/WROOM-32 – **sprawdź opisy pinów na swojej płytce** ⚠️ |
 | Napęd | 2 × silnik DC z przekładnią (gąsienice) ⚠️ | 6–12 V, prąd < 1 A na silnik |
-| Sterownik silników | TB6612FNG (zamiennie L298N) | TB6612: 1,2 A ciągłe, mniejsze straty |
+| Sterownik silników | **L298N** (moduł 43,7 × 43,7 mm – potwierdzone) | 2 A na kanał, ale spadek napięcia ok. 2 V (silniki dostaną ok. 5,4–6,4 V z 7,4–8,4 V) i grzeje się – radiator; zworki ENA/ENB zdjęte (PWM z ESP32), zworkę 5V-EN zdjąć i dać 5 V logiki z buck 5 V ⚠️ |
 | Serwa | **7 szt.** (szyja ×2, głowa, ramiona ×2, oczy ×2); dłonie bez serw – w modelu ustawiane ręcznie | **MG90S micro (potwierdzone)**; 4,8–6 V, ok. 1,8 kg·cm przy 4,8 V i 2,2 kg·cm przy 6 V; prąd w ruchu ok. 0,2–0,3 A, w zatrzymaniu do ok. 0,7–0,9 A (wg typowych kart katalogowych, nie mierzone) |
 | Sterownik serw | PCA9685 (I²C, 16 kanałów) | odciąża ESP32, zasilanie serw osobne |
 | Wyświetlacz (opcja) | OLED SSD1306 128×64 I²C (ramka `OLED_frame_v2`) | ozdoba/status; można pominąć – status pokazuje też strona na telefonie |
 | Kamera | **ESP32-CAM (AI-Thinker, OV2640) jako osobny moduł** w głowie/oku | własny procesor, strumień MJPEG; nie zajmuje pinów głównego ESP32 |
 | Dźwięk | MAX98357A (I²S) + głośnik 3 W | wymagany do funkcji „głos z telefonu” (mówisz do telefonu, mówi Wall-E) i do zapisanych dźwięków |
-| Zasilanie | akumulator 2S Li-ion 7,4 V (8,4 V naładowany) + przetwornice | |
+| Zasilanie | akumulator 2S Li-ion 7,4 V (8,4 V naładowany) + buck 5 V (logika) + **moduł zasilający 40 × 64 mm** (serwa, 6 V) | Moduł 40 × 64 zastępuje buck 6 V. Jego typ, napięcie wyjściowe i prąd ⚠️ nie są potwierdzone – ma dawać regulowane 6,0 V, ≥ 5 A |
 | Łączność z telefonem | **Wi-Fi AP + WebSocket**; klient: aplikacja na Androida ([`android/`](../android/)) | protokół: [`protocol.md`](protocol.md); strona WWW z ESP32 jako ewentualna alternatywa bez aplikacji |
 
 ## 2. Schemat połączeń
@@ -32,16 +32,16 @@ Montaż modułów na płytce drukowanej 3D: [`mounting-plate.md`](mounting-plate
 flowchart LR
     BAT["Akumulator 2S Li-ion 7.4V<br/>+ bezpiecznik 5A + wyłącznik"]
     BAT --> BUCK5["Buck 5V / 3A<br/>(ESP32, ESP32-CAM, MAX98357A)"]
-    BAT --> BUCK6["Buck 6V / 5A<br/>(serwa)"]
-    BAT -->|VM| DRV["TB6612FNG"]
+    BAT --> BUCK6["Moduł zasilający 6V<br/>40x64 mm (serwa)"]
+    BAT -->|VM| DRV["L298N"]
 
-    BUCK5 --> ESP["ESP32 DevKit"]
+    BUCK5 --> ESP["ESP32 NodeMCU v3"]
     BUCK6 -->|V+| PCA["PCA9685<br/>16x PWM"]
     PCA --> SERVA["Serwa ch0..ch6"]
 
     ESP -- "I2C SDA21/SCL22" --> PCA
     ESP -- "I2C" --> OLED["OLED SSD1306"]
-    ESP -- "PWM+DIR (6 pinów)" --> DRV
+    ESP -- "ENA/ENB + IN1..IN4 (6 pinów)" --> DRV
     DRV --> ML["Silnik lewy"]
     DRV --> MR["Silnik prawy"]
     ESP -- "I2S" --> AMP["MAX98357A + głośnik"]
@@ -56,8 +56,8 @@ flowchart LR
 
 ```
 Akumulator 2S ──[bezpiecznik 5A]──[wyłącznik]──┬── Buck 5V  ──► ESP32 (VIN/5V), OLED (3V3 z ESP32), ESP32-CAM (5V)
-                                               ├── Buck 6V  ──► PCA9685 V+ (zasilanie serw) + kondensator 1000 µF
-                                               └── bezpośrednio ► TB6612 VM (silniki) + kondensator 470 µF
+                                               ├── Zasilacz 6V (40×64) ► PCA9685 V+ (zasilanie serw) + kondensator 1000 µF
+                                               └── bezpośrednio ► L298N VS (silniki) + kondensator 470 µF
 GND wszystkich modułów połączone w jednym punkcie (wspólna masa).
 ```
 
@@ -66,8 +66,9 @@ Zasady:
 - Kondensator elektrolityczny 1000 µF przy złączu V+ PCA9685, 470 µF przy VM sterownika silników.
 - Pomiar baterii: dzielnik 100 kΩ / 47 kΩ do GPIO34 (8,4 V → 2,69 V). Odcięcie programowe poniżej 6,6 V.
 - ESP32-CAM pobiera ok. 180–300 mA (szczyty przy transmisji), dlatego przy jej złączu 5 V dajemy 470 µF; dioda flash (GPIO4 kamery) pozostaje wyłączona.
-- Rezerwa prądowa: serwa w ruchu do ok. 2–3 A, dlatego osobny buck 6 V ≥ 5 A.
-- Buck 6 V ustaw **dokładnie na 6,0 V** (multimetrem, przed podłączeniem PCA9685) – MG90S ma maksimum 6 V; nie ustawiaj 7,2 V.
+- Rezerwa prądowa: serwa w ruchu do ok. 2–3 A, dlatego osobny zasilacz 6 V ≥ 5 A.
+- L298N: logikę (zacisk +5V) zasil z buck 5 V po zdjęciu zworki 5V-EN – wbudowany stabilizator ma wymagać VS ≥ 7 V, a przy rozładowanym akumulatorze (6,6 V) to za mało ⚠️.
+- Zasilacz 6 V ustaw **dokładnie na 6,0 V** (multimetrem, przed podłączeniem PCA9685) – MG90S ma maksimum 6 V; nie ustawiaj 7,2 V.
 
 ## 4. Mapa pinów ESP32
 
@@ -78,18 +79,18 @@ Unikamy pinów rozruchowych (0, 2, 12, 15), pamięci flash (6–11) i wejść-ty
 | 21 | I²C SDA | PCA9685 SDA, OLED SDA |
 | 22 | I²C SCL | PCA9685 SCL, OLED SCL |
 | 4 | Wyjście | PCA9685 `OE` (LOW = serwa aktywne, HIGH = wyłączone) |
-| 25 | PWM | TB6612 `PWMA` (silnik lewy) |
-| 26 | Wyjście | TB6612 `AIN1` |
-| 27 | Wyjście | TB6612 `AIN2` |
-| 32 | PWM | TB6612 `PWMB` (silnik prawy) |
-| 33 | Wyjście | TB6612 `BIN1` |
-| 14 | Wyjście | TB6612 `BIN2` |
-| 13 | Wyjście | TB6612 `STBY` (HIGH = praca) |
+| 25 | PWM | L298N `ENA` (silnik lewy) |
+| 26 | Wyjście | L298N `IN1` |
+| 27 | Wyjście | L298N `IN2` |
+| 32 | PWM | L298N `ENB` (silnik prawy) |
+| 33 | Wyjście | L298N `IN3` |
+| 14 | Wyjście | L298N `IN4` |
+| 13 | – | *wolny* (L298N nie ma wejścia STBY; wcześniej TB6612 `STBY`) |
 | 18 | I²S BCLK | MAX98357A BCLK |
 | 19 | I²S LRC | MAX98357A LRC |
 | 23 | I²S DIN | MAX98357A DIN |
 | 34 | ADC (wejście) | dzielnik napięcia baterii |
-| 3V3 | zasilanie | OLED VCC, PCA9685 VCC (logika), TB6612 VCC |
+| 3V3 | zasilanie | OLED VCC, PCA9685 VCC (logika) |
 
 Adresy I²C: PCA9685 = `0x40`, OLED = `0x3C`.
 
@@ -161,17 +162,17 @@ odtwarzane przez MAX98357A.
 
 | Szt. | Element |
 |---|---|
-| 1 | ESP32 DevKit 38 pin |
+| 1 | ESP32 NodeMCU v3 (31,6 × 58,2 mm) |
 | 1 | ESP32-CAM AI-Thinker + OV2640 (najlepiej z taśmą 15–30 cm) |
 | 1 | Adapter USB-UART (lub ESP32-CAM-MB) do wgrania firmware kamery |
-| 1 | TB6612FNG (moduł) |
+| 1 | L298N (moduł 43,7 × 43,7 mm) |
 | 1 | PCA9685 (moduł 16 kanałów) |
 | 1 | OLED SSD1306 128×64 I²C *(opcja)* |
 | 7 | Serwa 9 g (MG90S) |
 | 2 | Silniki DC z przekładnią (te, które już masz) |
 | 1 | Akumulator 2S Li-ion + ładowarka/BMS 2S |
 | 1 | Buck 5 V ≥ 3 A (logika, ESP32-CAM) |
-| 1 | Buck 6 V ≥ 5 A (serwa) |
+| 1 | Moduł zasilający 40 × 64 mm, 6 V ≥ 5 A (serwa) |
 | 1 | Bezpiecznik 5 A + wyłącznik |
 | 1 | Kondensatory 1000 µF/16 V, 470 µF/16 V |
 | 1 | Rezystory 100 kΩ i 47 kΩ (dzielnik) |

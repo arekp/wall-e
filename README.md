@@ -29,7 +29,7 @@ kamerą w oku i sterowaniem z telefonu przez Wi-Fi. Projekt bazuje na innych pro
 
 ```
  Telefon (przeglądarka) ──Wi-Fi „WALLE”──► Główny ESP32 (punkt dostępu 192.168.4.1)
-        │                                    ├─ TB6612FNG → 2 silniki gąsienic
+        │                                    ├─ L298N → 2 silniki gąsienic
         │                                    ├─ PCA9685  → serwa (szyja, głowa, ramiona, oczy)
         │                                    ├─ OLED (opcja), MAX98357A (opcja)
         └──── obraz MJPEG ◄──────────────── ESP32-CAM (klient Wi-Fi, 192.168.4.10)
