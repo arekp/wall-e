@@ -26,9 +26,10 @@ OUT = Path(__file__).parent
 # ───────────────────────── parametry druku ─────────────────────────
 CLEAR = 0.3          # luz na stronę między modułem a kieszenią (FDM: 0.2–0.4)
 PLATE_T = 3.5        # grubość płyty
-MARGIN = 5.0         # odstęp modułów od krawędzi płyty
+MARGIN = 5.0         # odstęp modułów od krawędzi płyty (góra/dół – tam są otwory opasek)
+MARGIN_X = 2.5       # odstęp od lewej/prawej krawędzi (opaski idą w poprzek Y, więc może być mały)
 GAP = 5.0            # odstęp między modułami w tym samym rzędzie
-ROW_GAP = 12.0       # odstęp między rzędami (opaski, przewody i otwory M3 płyty)
+ROW_GAP = 10.0       # odstęp między rzędami (opaski, przewody i otwory M3 płyty)
 BR_H = 4.5           # wysokość narożnych kątowników ponad półką
 BR_ARM = 7.0         # długość ramienia kątownika
 BR_T = 1.6           # grubość ścianki kątownika (4 ścieżki dyszy 0.4)
@@ -39,11 +40,10 @@ HOLE_D = 3.4         # otwory M3 płyty (w pasach między rzędami modułów)
 HOLE_X = (12.0, 8.0)  # odległość otworów od lewej / prawej krawędzi płyty
 SPACER_H, SPACER_OD = 12.0, 8.0   # min. 12 (piny ESP32 ok. 8,5 mm + płyta). POD płytą leży akumulator: wysokość odstępnika = wys. akumulatora + 3 mm zapasu, gdy > 12
 
-# Wnętrze korpusu – wymiary wyciągnięte z modelu 3MF (części rozłożone na stołach druku, NIE złożone!).
-# Źródło i pewność: docs/mounting-plate.md, pkt 4. ⚠️ Pionowe luzy i kolizje z serwami/silnikami nie sprawdzone.
-INNER_W_MAX = 142.0   # front/tył mają 141,9 mm i wchodzą między ściany boczne
-INNER_D_MAX = 123.6   # pewny obszar dna (obrys 136 x 123,6 mm na spodzie body-bottom); głębiej niż to nie liczyć
-FIT_CLEAR_W = 3.0     # wymagany zapas na stronę w szerokości
+# Maksymalny rozmiar płyty – ZMIERZONY przez użytkownika we wnętrzu zbudowanego korpusu (wcześniejsze
+# oszacowanie z rozłożonych części 3MF okazało się za duże). Skrypt przerywa, gdy płyta jest większa.
+PLATE_MAX_W = 125.0
+PLATE_MAX_D = 110.0
 
 
 # Opis dla człowieka: co to jest i co do niego podłączyć (piny wg docs/electronics.md)
@@ -85,9 +85,9 @@ MODULES = [
 ]
 BY = {m.name: m for m in MODULES}
 ROWS = [
-    ["ESP32 DevKit 38p", "PCA9685"],
-    ["Buck 5 V (LM2596)", "Buck 6 V 5 A", "MAX98357A"],
-    ["TB6612FNG"],
+    ["ESP32 DevKit 38p", "Buck 5 V (LM2596)"],   # logika (5 V)
+    ["PCA9685", "Buck 6 V 5 A"],                 # serwa (6 V)
+    ["TB6612FNG", "MAX98357A"],                  # silniki i audio; z prawej wolne miejsce na bezpiecznik/wyłącznik/napisy
 ]
 # ESP32 stoi na kołkach w dół → szczeliny pod piny; rozstaw szczelin obejmuje 22,86 i 25,4 mm
 ESP_SLOT_C, ESP_SLOT_W, ESP_SLOT_L = 11.5, 5.0, 50.0
@@ -98,16 +98,21 @@ def pd(m): return m.d + 2 * CLEAR
 
 
 def layout() -> tuple[float, float]:
-    """Rzędy modułów od dołu do góry. Zwraca (W, D) płyty."""
+    """Rzędy modułów od dołu do góry. Zwraca (W, D) płyty.
+    Szerokość wyznacza najszerszy rząd; pozostałe rzędy są rozsunięte na całą szerokość (moduły przy
+    krawędziach, wolne miejsce w środku – na napisy, bezpiecznik, wyłącznik, kondensatory)."""
+    row_w = [sum(pw(BY[n]) for n in row) + GAP * (len(row) - 1) for row in ROWS]
+    inner_w = max(row_w)
+    W = inner_w + 2 * MARGIN_X
     y = MARGIN
-    for row in ROWS:
-        x = MARGIN
+    for row, rw in zip(ROWS, row_w):
+        gap = GAP + (inner_w - rw) / (len(row) - 1) if len(row) > 1 else GAP
+        x = MARGIN_X
         for n in row:
             m = BY[n]
             m.x, m.y = x, y
-            x += pw(m) + GAP
+            x += pw(m) + gap
         y += max(pd(BY[n]) for n in row) + ROW_GAP
-    W = max(m.x + pw(m) for m in MODULES) + MARGIN
     D = max(m.y + pd(m) for m in MODULES) + MARGIN
     return W, D
 
@@ -234,10 +239,18 @@ def place_labels(W, D):
         w, h = poly.bounds[2], poly.bounds[3]
         x0, y0, x1, y1 = pocket_rect(m)
         found = None
+        # kandydaci: cała płyta, najbliżej kieszeni modułu (odległość od krawędzi kieszeni), max 22 mm
+        pocket = sbox(x0, y0, x1, y1)
         cands = []
-        for ty in (y1 + BR_T + 1.0, y0 - BR_T - 1.0 - h):          # nad, potem pod kieszenią
-            cands += [(tx, ty) for tx in sorted(np.arange(x0 - 15, x1 - w + 15, 1.0), key=lambda t: abs(t - x0))]
-        cands.append((x1 + BR_T + 1.0, (y0 + y1) / 2 - h / 2))      # na końcu: z prawej strony kieszeni
+        for tx in np.arange(1.0, W - w, 0.5):
+            for ty in np.arange(1.0, D - h, 0.5):
+                tb = sbox(tx, ty, tx + w, ty + h)
+                dist = tb.distance(pocket)
+                # napis musi leżeć bliżej własnej kieszeni niż jakiejkolwiek innej (inaczej myli)
+                nearer = all(dist < tb.distance(sbox(*pocket_rect(o))) for o in MODULES if o is not m)
+                if dist <= 22.0 and nearer:
+                    cands.append((dist, tx, ty))
+        cands = [(tx, ty) for _, tx, ty in sorted(cands)]
         for tx, ty in cands:
             r = sbox(tx, ty, tx + w, ty + h)
             if edge.contains(r) and not any(r.intersects(k) for k in keep + placed):
@@ -264,14 +277,34 @@ def label_cutters(W, D):
 
 
 def hole_positions(W, D):
-    """4 otwory M3 w pasach między rzędami modułów (rzędy 1|2 i 2|3), z dala od otworów na opaski."""
-    ys = []
-    y = MARGIN
+    """4 otwory M3 w pasach między rzędami: w każdym pasie jeden przy lewej i jeden przy prawej krawędzi,
+    w pierwszym wolnym miejscu (omijają otwory opasek i kątowniki)."""
+    r = HOLE_D / 2 + 1.0
+    rects = [pocket_rect(m) for m in MODULES]
+    cuts = [c.bounds for m in MODULES for c in cutouts(m)]
+
+    def free(hx, hy):
+        for (x0, y0, x1, y1) in rects:
+            if x0 - BR_T - r < hx < x1 + BR_T + r and y0 - BR_T - r < hy < y1 + BR_T + r:
+                return False
+        for b in cuts:
+            if b[0][0] - r < hx < b[1][0] + r and b[0][1] - r < hy < b[1][1] + r:
+                return False
+        return True
+
+    ys, y = [], MARGIN
     for row in ROWS[:-1]:
         y += max(pd(BY[n]) for n in row)
         ys.append(y + ROW_GAP / 2)
         y += ROW_GAP
-    return [(x, yy) for yy in ys for x in (HOLE_X[0], W - HOLE_X[1])]
+    out = []
+    for yy in ys:
+        for side, start in ((1, HOLE_X), (-1, HOLE_X)):
+            xs = [HOLE_X[0] + i * 0.5 for i in range(0, 120)] if side == 1 else [W - HOLE_X[1] - i * 0.5 for i in range(0, 120)]
+            x = next((x for x in xs if free(x, yy)), None)
+            assert x is not None, f"brak miejsca na otwór M3 w pasie y={yy:.1f}"
+            out.append((x, yy))
+    return out
 
 
 def build_plate():
@@ -384,8 +417,8 @@ def check_layout(W, D):
                 assert not (b[0][0] - r < hx < b[1][0] + r and b[0][1] - r < hy < b[1][1] + r), \
                     f"otwór M3 ({hx:.1f},{hy:.1f}) koliduje z otworem opaski {m.name}"
     # zmieszczenie we wnętrzu korpusu (wymiary z 3MF – patrz docs/mounting-plate.md pkt 4)
-    assert W <= INNER_W_MAX - 2 * FIT_CLEAR_W + 1e-6, f"płyta za szeroka: {W:.1f} > {INNER_W_MAX - 2 * FIT_CLEAR_W:.1f}"
-    assert D <= INNER_D_MAX + 1e-6, f"płyta za głęboka: {D:.1f} > {INNER_D_MAX}"
+    assert W <= PLATE_MAX_W + 1e-6, f"płyta za szeroka: {W:.1f} > {PLATE_MAX_W}"
+    assert D <= PLATE_MAX_D + 1e-6, f"płyta za głęboka: {D:.1f} > {PLATE_MAX_D}"
 
 
 def main():
@@ -404,7 +437,7 @@ def main():
     coupon.export(OUT / "walle_fit_coupon.stl")
     spacer.export(OUT / "walle_spacer.stl")
     preview(W, D)
-    print(f"płyta {W:.1f} x {D:.1f} mm (zapas w szerokości {(INNER_W_MAX - W) / 2:.1f} mm na stronę) – OK")
+    print(f"płyta {W:.1f} x {D:.1f} mm (limit {PLATE_MAX_W:g} x {PLATE_MAX_D:g}, zapas {PLATE_MAX_W - W:.1f} x {PLATE_MAX_D - D:.1f} mm) – OK")
 
 
 if __name__ == "__main__":
